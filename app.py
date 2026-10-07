@@ -1,95 +1,147 @@
+import os
+from io import BytesIO
 import streamlit as st
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-import os
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
 
-st.set_page_config(page_title="Tiger 4 India - Residence Verification", page_icon="📄")
+st.set_page_config(page_title="Residence Verification Report", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("কেৱল তলৰ খালী ঠাইবোৰ পূৰণ কৰক, বাকী ফৰ্মখন নিজে নিজে এই PDF টোৰ দৰে প্ৰস্তুত হৈ যাব!")
+st.write("Tiger 4 India Limited - য়ে নিৰ্ধাৰণ কৰা ফৰ্ম আৰু ফটো আপলোড কৰক:")
 
-# --- এডিট কৰিবলগীয়া ইনপুটসমূহ (User Editable Fields) ---
-st.subheader("📝 প্ৰয়োজনীয় তথ্যসমূহ সলনি কৰক:")
+# ইনপুট ফৰ্ম
+with st.form("verification_form"):
+    st.subheader("📋 Applicant & Visit Details")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        applicant_name = st.text_input("Name of Applicant", "GHUNUCHA DEVI")
+        branch_name = st.text_input("Branch Name", "SBINMCH BRANCH")
+        lifting_date = st.text_input("Lifting Date", "29.09.2026")
+        date_of_visit = st.text_input("Date of Visit", "30.09.2026")
+        time_of_visit = st.text_input("Time of Visit", "04:36:00 PM")
+        address = st.text_area("Residence Address", "LALIT CHANDRA NATH, VILL PACHIM DIGHALDARI, DIGHALDARI, NAGAON, ASSAM. 782103")
+        
+    with col2:
+        verifier_name = st.text_input("Verifier Name", "IKABAL HUSSAIN")
+        person_met = st.text_input("Person Met", "GHUNUCHA DEVI")
+        relationship = st.text_input("Relationship", "WIFE")
+        family_members = st.text_input("Total Family Members", "05")
+        earning_members = st.text_input("Total Earning Members", "03")
+        ownership = st.text_input("Ownership", "OWN HOUSE")
+        construction = st.text_input("Construction & Roof", "CEMENTED / CONCRETE")
 
-verifier_remark = st.text_area("Verifier Remarks:", "I Visited At The Provided Address & I Met with the Applicant. Neighbor’s feedbacks Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive.")
-branch_name = st.text_input("Branch Name:", "SBINMCH BRANCH")
-lifting_date = st.text_input("Lifting Date:", "29.09.2026")
-applicant_name = st.text_input("Name of Applicant:", "GHUNUCHA DEVI")
-residence_address = st.text_area("Residence Address:", "LALIT CHANDRA NATH, VILL PACHIM DIGHALDARI, DIGHALDARI, NAGAON, ASSAM. 782103")
-date_of_visit = st.text_input("Date of Visit:", "30.09.2026")
-time_of_visit = st.text_input("Time of Visit:", "04:36:00 PM")
-person_met = st.text_input("Person Met:", "GHUNUCHA DEVI")
-relationship = st.text_input("Relationship:", "WIFE")
-total_family_members = st.text_input("Total Family Members:", "05")
-total_earning = st.text_input("Total Earnings Members:", "03")
-ownership = st.text_input("Ownership:", "OWN HOUSE")
-purpose = st.text_input("Purpose:", "SURYA GHAR LOAN")
-neighbor_feedback = st.text_input("Neighbor's Feedback:", "GOOD")
-remarks_status = st.text_input("Remarks:", "Positive")
-verifier_name = st.text_input("Verifier Name:", "IKABAL HUSSAIN")
+    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
+    uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
+    uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
-# ফটো আপলোড কৰাৰ সুবিধা
-uploaded_photo = st.file_uploader("ঘৰৰ ফটো বা Selfie আপলোড কৰক (যিটো PDF ৰ তলত থাকিব):", type=["jpg", "jpeg", "png"])
+    submitted = st.form_submit_button("Generate Professional PDF")
 
-# PDF বনোৱা বটন
-if st.button("🚀 PDF ৰিপৰ্ট প্ৰস্তুত কৰক"):
-    pdf_filename = "Residence_Verification_Report.pdf"
+if submitted:
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    story = []
     
-    # PDF Page Setup
-    c = canvas.Canvas(pdf_filename, pagesize=letter)
-    width, height = letter
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#003366'),
+        alignment=1,
+        spaceAfter=6
+    )
+    subtitle_style = ParagraphStyle(
+        'SubTitleStyle',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#555555'),
+        alignment=1,
+        spaceAfter=15
+    )
     
-    # Header Information (Tiger 4 India Limited)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 30, "TIGER 4 INDIA LIMITED")
-    c.setFont("Helvetica", 8)
-    c.drawString(50, height - 42, "Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India")
-    c.drawString(50, height - 52, "E-mail id: tigerindialtd@gmail.com | Mobile: 8282864451")
+    # হেডিং অংশ
+    story.append(Paragraph("<b>TIGER 4 INDIA LIMITED</b>", title_style))
+    story.append(Paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070<br/>E-mail: tigindialtd@gmail.com | Mobile: 8282864451", subtitle_style))
+    story.append(Paragraph("<b><u>RESIDENCE VERIFICATION REPORT</u></b>", ParagraphStyle('H2', parent=title_style, fontSize=13, textColor=colors.HexColor('#222222'))))
+    story.append(Spacer(1, 10))
     
-    # Report Title
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(220, height - 70, "Residence Verification Report")
-    
-    # Body Details
-    c.setFont("Helvetica", 8)
-    y = height - 90
-    
-    details = [
-        f"Verifier Remarks: {verifier_remark}",
-        f"Branch Name: {branch_name} | Lifting Date: {lifting_date}",
-        f"Name of Applicant: {applicant_name}",
-        f"Residence Address: {residence_address}",
-        f"Date of Visit: {date_of_visit} | Time of Visit: {time_of_visit}",
-        f"Person Met: {person_met} | Relationship: {relationship}",
-        f"Total Family Members: {total_family_members} | Total Earnings Members: {total_earning}",
-        f"Ownership: {ownership} | Purpose: {purpose}",
-        f"Neighbor’s Feedback: {neighbor_feedback} | Remarks: {remarks_status}",
-        f"Verifier Name: {verifier_name}"
+    # তথ্য তালিকা
+    data = [
+        [Paragraph("<b>Branch Name:</b>", styles['Normal']), Paragraph(branch_name, styles['Normal']), Paragraph("<b>Lifting Date:</b>", styles['Normal']), Paragraph(lifting_date, styles['Normal'])],
+        [Paragraph("<b>Applicant Name:</b>", styles['Normal']), Paragraph(applicant_name, styles['Normal']), Paragraph("<b>Date of Visit:</b>", styles['Normal']), Paragraph(date_of_visit)],
+        [Paragraph("<b>Address:</b>", styles['Normal']), Paragraph(address, styles['Normal']), Paragraph("<b>Time of Visit:</b>", styles['Normal']), Paragraph(time_of_visit)],
+        [Paragraph("<b>Person Met:</b>", styles['Normal']), Paragraph(person_met, styles['Normal']), Paragraph("<b>Relationship:</b>", styles['Normal']), Paragraph(relationship)],
+        [Paragraph("<b>Family / Earning:</b>", styles['Normal']), Paragraph(f"Family: {family_members} | Earning: {earning_members}", styles['Normal']), Paragraph("<b>Ownership:</b>", styles['Normal']), Paragraph(ownership)],
+        [Paragraph("<b>Construction:</b>", styles['Normal']), Paragraph(construction, styles['Normal']), Paragraph("<b>Purpose:</b>", styles['Normal']), Paragraph("SURYA GHAR LOAN", styles['Normal'])],
+        [Paragraph("<b>Verifier Name:</b>", styles['Normal']), Paragraph(verifier_name, styles['Normal']), Paragraph("<b>Final Status:</b>", styles['Normal']), Paragraph("<b><font color='green'>POSITIVE</font></b>", styles['Normal'])],
     ]
     
-    for line in details:
-        c.drawString(50, y, line)
-        y -= 15
-        
-    # যদি ফটো আপলোড কৰে
-    if uploaded_photo is not None:
-        img_path = "temp_ver_img.jpg"
-        with open(img_path, "wb") as f:
-            f.write(uploaded_photo.getbuffer())
-        try:
-            c.drawImage(img_path, 50, y - 180, width=200, height=150)
-        except:
-            pass
+    t = Table(data, colWidths=[110, 160, 90, 180])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F9F9F9')),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CCCCCC')),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#DDDDDD')),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+    ]))
+    
+    story.append(t)
+    story.append(Spacer(1, 15))
+    
+    # ফটো সংযোজন অংশ
+    story.append(Paragraph("<b>Verification Photos:</b>", styles['Heading2']))
+    story.append(Spacer(1, 5))
+    
+    img_data = []
+    temp_files = []
+    
+    for idx, up_file in enumerate([uploaded_photo1, uploaded_photo2]):
+        if up_file is not None:
+            temp_path = f"temp_img_{idx}.jpg"
+            with open(temp_path, "wb") as f:
+                f.write(up_file.getbuffer())
+            temp_files.append(temp_path)
+            img_data.append(RLImage(temp_path, width=220, height=160))
             
-    c.save()
+    if len(img_data) > 0:
+        # ফটো দুখন শাৰী-শাৰীকৈ সজোৱা
+        while len(img_data) < 2:
+            img_data.append("") # যদি এখন দিয়ে বাকীখন খালী ৰাখিবলৈ
+            
+        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[270, 270])
+        photo_table.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ]))
+        story.append(photo_table)
+
+    story.append(Spacer(1, 25))
     
-    st.success("✨ আপোনাৰ PDF ৰিপৰ্ট সফলভাৱে তৈয়াৰ হ'ল!")
+    # চহী অংশ
+    sig_data = [
+        [Paragraph("<b>Neighbor’s Feedback:</b> Good", styles['Normal']), Paragraph(f"<b>Verifier Signature:</b><br/>{verifier_name}", styles['Normal'])],
+        [Paragraph("<b>Recommendation:</b> Yes", styles['Normal']), Paragraph("<b>Authorized Seal & Signature</b>", styles['Normal'])]
+    ]
+    sig_table = Table(sig_data, colWidths=[270, 270])
+    story.append(sig_table)
+
+    doc.build(story)
     
-    # Download Button
-    with open(pdf_filename, "rb") as pdf_file:
-        st.download_button(
-            label="📥 PDF ডাউনলোড কৰক",
-            data=pdf_file,
-            file_name="Verification_Report.pdf",
-            mime="application/pdf"
-        )
+    # টেম্পেৰাৰী ফাইল ডিলিট কৰা
+    for tf in temp_files:
+        if os.path.exists(tf):
+            os.remove(tf)
+            
+    buffer.seek(0)
+    
+    st.success("✨ PDF Report Successfully Generated!")
+    st.download_button(
+        label="📥 Download Professional PDF",
+        data=buffer,
+        file_name="Residence_Verification_Report.pdf",
+        mime="application/pdf"
+    )

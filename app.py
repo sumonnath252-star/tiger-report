@@ -5,15 +5,16 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from docx import Document
 
-st.set_page_config(page_title="Residence Verification Report", layout="centered")
+st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("Tiger 4 India Limited - য়ে নিৰ্ধাৰণ কৰা ফৰ্ম আৰু ফটো আপলোড কৰক:")
+st.write("ফৰ্মৰ তথ্যসমূহ পৰিৱৰ্তন কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
 
-# ইনপুট ফৰ্ম
+# ইনপুট ফৰ্ম (সকলো এডিট কৰিব পৰা হ'ব)
 with st.form("verification_form"):
-    st.subheader("📋 Applicant & Visit Details")
+    st.subheader("📋 Applicant & Visit Details (Edit as needed)")
     col1, col2 = st.columns(2)
     
     with col1:
@@ -37,11 +38,12 @@ with st.form("verification_form"):
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
-    submitted = st.form_submit_button("Generate Professional PDF")
+    submitted = st.form_submit_button("Generate Files")
 
 if submitted:
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    # --- PDF Generation ---
+    pdf_buffer = BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     story = []
     
     styles = getSampleStyleSheet()
@@ -62,13 +64,11 @@ if submitted:
         spaceAfter=15
     )
     
-    # হেডিং অংশ
     story.append(Paragraph("<b>TIGER 4 INDIA LIMITED</b>", title_style))
     story.append(Paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070<br/>E-mail: tigindialtd@gmail.com | Mobile: 8282864451", subtitle_style))
     story.append(Paragraph("<b><u>RESIDENCE VERIFICATION REPORT</u></b>", ParagraphStyle('H2', parent=title_style, fontSize=13, textColor=colors.HexColor('#222222'))))
     story.append(Spacer(1, 10))
     
-    # তথ্য তালিকা
     data = [
         [Paragraph("<b>Branch Name:</b>", styles['Normal']), Paragraph(branch_name, styles['Normal']), Paragraph("<b>Lifting Date:</b>", styles['Normal']), Paragraph(lifting_date, styles['Normal'])],
         [Paragraph("<b>Applicant Name:</b>", styles['Normal']), Paragraph(applicant_name, styles['Normal']), Paragraph("<b>Date of Visit:</b>", styles['Normal']), Paragraph(date_of_visit)],
@@ -92,7 +92,6 @@ if submitted:
     story.append(t)
     story.append(Spacer(1, 15))
     
-    # ফটো সংযোজন অংশ
     story.append(Paragraph("<b>Verification Photos:</b>", styles['Heading2']))
     story.append(Spacer(1, 5))
     
@@ -108,10 +107,8 @@ if submitted:
             img_data.append(RLImage(temp_path, width=220, height=160))
             
     if len(img_data) > 0:
-        # ফটো দুখন শাৰী-শাৰীকৈ সজোৱা
         while len(img_data) < 2:
-            img_data.append("") # যদি এখন দিয়ে বাকীখন খালী ৰাখিবলৈ
-            
+            img_data.append("")
         photo_table = Table([[img_data[0], img_data[1]]], colWidths=[270, 270])
         photo_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
@@ -119,29 +116,57 @@ if submitted:
         ]))
         story.append(photo_table)
 
-    story.append(Spacer(1, 25))
+    story.append(Spacer(1, 20))
     
-    # চহী অংশ
+    # চহী আৰু চীলৰ অংশ (Authorized Signature with Seal)
     sig_data = [
-        [Paragraph("<b>Neighbor’s Feedback:</b> Good", styles['Normal']), Paragraph(f"<b>Verifier Signature:</b><br/>{verifier_name}", styles['Normal'])],
-        [Paragraph("<b>Recommendation:</b> Yes", styles['Normal']), Paragraph("<b>Authorized Seal & Signature</b>", styles['Normal'])]
+        [Paragraph("<b>Neighbor’s Feedback:</b> Good", styles['Normal']), Paragraph(f"<b>Verifier Name:</b> {verifier_name}<br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])]
     ]
     sig_table = Table(sig_data, colWidths=[270, 270])
     story.append(sig_table)
 
     doc.build(story)
+    pdf_buffer.seek(0)
     
-    # টেম্পেৰাৰী ফাইল ডিলিট কৰা
+    # --- Word (.docx) Generation ---
+    doc_word = Document()
+    doc_word.add_heading("TIGER 4 INDIA LIMITED", level=1)
+    doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070\nE-mail: tigindialtd@gmail.com | Mobile: 8282864451")
+    doc_word.add_heading("RESIDENCE VERIFICATION REPORT", level=2)
+    
+    doc_word.add_paragraph(f"Branch Name: {branch_name} | Lifting Date: {lifting_date}")
+    doc_word.add_paragraph(f"Name of Applicant: {applicant_name}")
+    doc_word.add_paragraph(f"Residence Address: {address}")
+    doc_word.add_paragraph(f"Date of Visit: {date_of_visit} | Time: {time_of_visit}")
+    doc_word.add_paragraph(f"Person Met: {person_met} | Relationship: {relationship}")
+    doc_word.add_paragraph(f"Total Family Members: {family_members} | Earning Members: {earning_members}")
+    doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction}")
+    doc_word.add_paragraph(f"Verifier Name: {verifier_name}")
+    doc_word.add_paragraph("Remarks: Positive")
+    doc_word.add_paragraph("\nAuthorized Signature with Seal")
+    
+    word_buffer = BytesIO()
+    doc_word.save(word_buffer)
+    word_buffer.seek(0)
+    
     for tf in temp_files:
         if os.path.exists(tf):
             os.remove(tf)
             
-    buffer.seek(0)
+    st.success("✨ Files successfully generated!")
     
-    st.success("✨ PDF Report Successfully Generated!")
-    st.download_button(
-        label="📥 Download Professional PDF",
-        data=buffer,
-        file_name="Residence_Verification_Report.pdf",
-        mime="application/pdf"
-    )
+    col_d1, col_d2 = st.columns(2)
+    with col_d1:
+        st.download_button(
+            label="📥 Download PDF",
+            data=pdf_buffer,
+            file_name="Residence_Verification_Report.pdf",
+            mime="application/pdf"
+        )
+    with col_d2:
+        st.download_button(
+            label="📥 Download Word",
+            data=word_buffer,
+            file_name="Residence_Verification_Report.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )

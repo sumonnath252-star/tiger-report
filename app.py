@@ -10,7 +10,7 @@ from docx import Document
 st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("Sokolu option fillup koriknba PDF aru Word download korok:")
+st.write("ফৰ্মৰ তথ্যসমূহ পূৰণ কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
 
 with st.form("verification_form"):
     st.subheader("📋 Applicant & Visit Details")
@@ -62,11 +62,15 @@ with st.form("verification_form"):
         prev_applied = st.text_input("Did Customer Apply Previously?", "NA")
         prev_date = st.text_input("Date of Previous File", "NA")
         recommendation = st.text_input("Recommendation", "Yes")
-        verifier_name = st.text_input("Verifier Name", "NAJMUL HOQUE")
+        verifier_name = st.text_input("Verifier Name", "EKRAMUL HUSSAIN")
 
-    st.subheader("📸 Upload Verification Photos (Duikhon Photo)")
+    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
+
+    # አማক চীল (Seal) আপলোড কৰাৰ অপচন দিয়া হৈছে যাতে হুবহু ফটোখনৰ দৰে চীলটো বহুৱাব পৰা যায়
+    st.subheader("🔵 Upload Authorized Seal Image (ঐচ্ছিক)")
+    uploaded_seal = st.file_uploader("Upload Seal Image (PNG/JPG)", type=["jpg", "jpeg", "png"], key="seal")
 
     submitted = st.form_submit_button("Generate Files")
 
@@ -145,11 +149,24 @@ if submitted:
 
     story.append(Spacer(1, 10))
     
-    # Verifier Name r uporot Seal thakiba
-    sig_data = [
-        [Paragraph("", styles['Normal']), Paragraph(f"<b>Verifier Name: {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])]
+    # Seal আৰু Verifier Name ৰ সঠিক বিন্যাস (যাতে চীলটো ভেৰিফাইয়াৰ নামৰ ওপৰত বা কাষত মিলে)
+    seal_element = ""
+    if uploaded_seal is not None:
+        seal_path = "temp_seal.png"
+        with open(seal_path, "wb") as f:
+            f.write(uploaded_seal.getbuffer())
+        temp_files.append(seal_path)
+        seal_element = RLImage(seal_path, width=90, height=90)
+    else:
+        seal_element = Paragraph("<b>[ Seal Placeholder ]</b>", styles['Normal'])
+
+    sig_layout_data = [
+        [seal_element, Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])]
     ]
-    sig_table = Table(sig_data, colWidths=[280, 280])
+    sig_table = Table(sig_layout_data, colWidths=[150, 410])
+    sig_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ]))
     story.append(sig_table)
 
     doc.build(story)
@@ -168,7 +185,7 @@ if submitted:
     doc_word.add_paragraph(f"Family Members: {family_members} | Earning: {earning_members}")
     doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
     doc_word.add_paragraph(f"Verifier Remarks: {verifier_remarks}")
-    doc_word.add_paragraph(f"\nVerifier Name: {verifier_name}\nAuthorized Signature with Seal")
+    doc_word.add_paragraph(f"\nVerifier Name: - {verifier_name}\nAuthorized Signature with Seal")
     
     word_buffer = BytesIO()
     doc_word.save(word_buffer)

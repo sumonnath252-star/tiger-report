@@ -10,7 +10,7 @@ from docx import Document
 st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("ফৰ্মৰ তথ্যসমূহ পূৰণ কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
+st.write("Formor tathyasumuh puron kori PDF aru Word duytai download korok:")
 
 with st.form("verification_form"):
     st.subheader("📋 Applicant & Visit Details")
@@ -64,18 +64,16 @@ with st.form("verification_form"):
         recommendation = st.text_input("Recommendation", "Yes")
         verifier_name = st.text_input("Verifier Name", "EKRAMUL HUSSAIN")
 
-    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
+    st.subheader("📸 Upload Verification Photos (Duikhon Photo)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
-    # አማক চীল (Seal) আপলোড কৰাৰ অপচন দিয়া হৈছে যাতে হুবহু ফটোখনৰ দৰে চীলটো বহুৱাব পৰা যায়
-    st.subheader("🔵 Upload Authorized Seal Image (ঐচ্ছিক)")
+    st.subheader("🔵 Upload Authorized Seal Image")
     uploaded_seal = st.file_uploader("Upload Seal Image (PNG/JPG)", type=["jpg", "jpeg", "png"], key="seal")
 
     submitted = st.form_submit_button("Generate Files")
 
 if submitted:
-    # --- PDF Generation ---
     pdf_buffer = BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=25)
     story = []
@@ -149,30 +147,33 @@ if submitted:
 
     story.append(Spacer(1, 10))
     
-    # Seal আৰু Verifier Name ৰ সঠিক বিন্যাস (যাতে চীলটো ভেৰিফাইয়াৰ নামৰ ওপৰত বা কাষত মিলে)
+    # Seal tu verifier name r thik uporot stack korar bebohstha
     seal_element = ""
     if uploaded_seal is not None:
         seal_path = "temp_seal.png"
         with open(seal_path, "wb") as f:
             f.write(uploaded_seal.getbuffer())
         temp_files.append(seal_path)
-        seal_element = RLImage(seal_path, width=90, height=90)
+        seal_element = RLImage(seal_path, width=80, height=80)
     else:
         seal_element = Paragraph("<b>[ Seal Placeholder ]</b>", styles['Normal'])
 
-    sig_layout_data = [
-        [seal_element, Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])]
+    sig_cell_contents = [
+        seal_element,
+        Spacer(1, 4),
+        Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><b>Authorized Signature with Seal</b>", styles['Normal'])
     ]
-    sig_table = Table(sig_layout_data, colWidths=[150, 410])
+    
+    sig_table = Table([[sig_cell_contents]], colWidths=[250])
     sig_table.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
     ]))
     story.append(sig_table)
 
     doc.build(story)
     pdf_buffer.seek(0)
     
-    # --- Word Generation ---
     doc_word = Document()
     doc_word.add_heading("TIGER 4 INDIA LIMITED", level=1)
     doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India\nE-mail id: tigindialtd@gmail.com | Mobile: 8282864451")

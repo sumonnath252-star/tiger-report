@@ -10,31 +10,61 @@ from docx import Document
 st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("ফৰ্মৰ তথ্যসমূহ পৰিৱৰ্তন কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
+st.write("Sokolu option fillup koriknba PDF aru Word download korok:")
 
-# ইনপুট ফৰ্ম (সকলো এডিট কৰিব পৰা হ'ব)
 with st.form("verification_form"):
-    st.subheader("📋 Applicant & Visit Details (Edit as needed)")
+    st.subheader("📋 Applicant & Visit Details")
     col1, col2 = st.columns(2)
     
     with col1:
-        applicant_name = st.text_input("Name of Applicant", "GHUNUCHA DEVI")
-        branch_name = st.text_input("Branch Name", "SBINMCH BRANCH")
-        lifting_date = st.text_input("Lifting Date", "29.09.2026")
-        date_of_visit = st.text_input("Date of Visit", "30.09.2026")
-        time_of_visit = st.text_input("Time of Visit", "04:36:00 PM")
-        address = st.text_area("Residence Address", "LALIT CHANDRA NATH, VILL PACHIM DIGHALDARI, DIGHALDARI, NAGAON, ASSAM. 782103")
-        
-    with col2:
-        verifier_name = st.text_input("Verifier Name", "IKABAL HUSSAIN")
-        person_met = st.text_input("Person Met", "GHUNUCHA DEVI")
-        relationship = st.text_input("Relationship", "WIFE")
+        branch_name = st.text_input("Branch Name", "SBI SAMAGURI BRANCH")
+        lifting_date = st.text_input("Lifting Date", "03.10.2026")
+        applicant_name = st.text_input("Name of Applicant", "USUF ALI")
+        address = st.text_area("Residence Address", "VILL:LALUNG GAON, P/O-KASORI P/S-JURIA PINCODE-782124 DIST: NAGAON, ASSAM")
+        date_of_visit = st.text_input("Date of Visit", "03.10.2026")
+        time_of_visit = st.text_input("Time of Visit", "09:33:00 AM")
+        address_confirmed = st.text_input("Address Confirmed", "YES")
+        person_met = st.text_input("Person Met", "OSMAN ALI")
+        relationship = st.text_input("Relationship", "FATHER")
+        marital_status = st.text_input("Marital Status", "MARRIED")
         family_members = st.text_input("Total Family Members", "05")
         earning_members = st.text_input("Total Earning Members", "03")
+        children = st.text_input("Children", "00")
+        
+    with col2:
+        is_spouse_working = st.text_input("Is Spouse Working? (Y/N)", "NA")
+        spouse_details = st.text_input("If Yes Then Details", "NA")
         ownership = st.text_input("Ownership", "OWN HOUSE")
-        construction = st.text_input("Construction & Roof", "CEMENTED / CONCRETE")
+        years_in_house = st.text_input("No of Years in Existing House", "BY BIRTH")
+        locality = st.text_input("Locality", "NA")
+        unit = st.text_input("Unit", "GROUND FLOOR")
+        construction = st.text_input("Construction", "CEMENTED")
+        roof_type = st.text_input("Type of Roof", "CONCRETE")
+        approx_area = st.text_input("Approx Area of the House (Sq Ft.)", "1000 SQFT")
+        floor = st.text_input("Floor of the House", "GROUND")
+        assets_seen = st.text_input("Assets Seen? (Y/N)", "YES")
+        vehicle = st.text_input("Vehicle", "NA")
+        portrait = st.text_input("Portrait of Political Leaders", "NO")
 
-    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
+    st.subheader("📊 Additional Details & Remarks")
+    col3, col4 = st.columns(2)
+    with col3:
+        purpose = st.text_input("Purpose", "SURYA GHAR LOAN")
+        prop_location = st.text_input("Proposed Property Location", "EASY")
+        loans_taken = st.text_input("Any Loans Taken? (Y/N)", "NO")
+        financier = st.text_input("Financier", "NA")
+        emi = st.text_input("EMI", "NA")
+        accessibility = st.text_input("Accessibility of Office", "Easy")
+    with col4:
+        neighbors_feedback = st.text_input("Neighbor's Feedback", "GOOD")
+        verifier_remarks = st.text_input("Verifier Remarks", "I Visited At The Provided Address and found solar panel is successfully installed")
+        remarks = st.text_input("Remarks", "Positive")
+        prev_applied = st.text_input("Did Customer Apply Previously?", "NA")
+        prev_date = st.text_input("Date of Previous File", "NA")
+        recommendation = st.text_input("Recommendation", "Yes")
+        verifier_name = st.text_input("Verifier Name", "NAJMUL HOQUE")
+
+    st.subheader("📸 Upload Verification Photos (Duikhon Photo)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
@@ -43,57 +73,54 @@ with st.form("verification_form"):
 if submitted:
     # --- PDF Generation ---
     pdf_buffer = BytesIO()
-    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=25)
     story = []
     
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        'TitleStyle',
-        parent=styles['Heading1'],
-        fontSize=16,
-        textColor=colors.HexColor('#003366'),
-        alignment=1,
-        spaceAfter=6
-    )
-    subtitle_style = ParagraphStyle(
-        'SubTitleStyle',
-        parent=styles['Normal'],
-        fontSize=9,
-        textColor=colors.HexColor('#555555'),
-        alignment=1,
-        spaceAfter=15
-    )
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=14, textColor=colors.HexColor('#003366'), alignment=1, spaceAfter=4)
+    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Normal'], fontSize=8, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=10)
     
     story.append(Paragraph("<b>TIGER 4 INDIA LIMITED</b>", title_style))
-    story.append(Paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070<br/>E-mail: tigindialtd@gmail.com | Mobile: 8282864451", subtitle_style))
-    story.append(Paragraph("<b><u>RESIDENCE VERIFICATION REPORT</u></b>", ParagraphStyle('H2', parent=title_style, fontSize=13, textColor=colors.HexColor('#222222'))))
-    story.append(Spacer(1, 10))
+    story.append(Paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India<br/>E-mail id: tigindialtd@gmail.com | Mobile: 8282864451", subtitle_style))
+    story.append(Paragraph("<b><u>RESIDENCE VERIFICATION REPORT</u></b>", ParagraphStyle('H2', parent=title_style, fontSize=11, textColor=colors.HexColor('#222222'))))
+    story.append(Spacer(1, 6))
     
     data = [
         [Paragraph("<b>Branch Name:</b>", styles['Normal']), Paragraph(branch_name, styles['Normal']), Paragraph("<b>Lifting Date:</b>", styles['Normal']), Paragraph(lifting_date, styles['Normal'])],
         [Paragraph("<b>Applicant Name:</b>", styles['Normal']), Paragraph(applicant_name, styles['Normal']), Paragraph("<b>Date of Visit:</b>", styles['Normal']), Paragraph(date_of_visit)],
         [Paragraph("<b>Address:</b>", styles['Normal']), Paragraph(address, styles['Normal']), Paragraph("<b>Time of Visit:</b>", styles['Normal']), Paragraph(time_of_visit)],
-        [Paragraph("<b>Person Met:</b>", styles['Normal']), Paragraph(person_met, styles['Normal']), Paragraph("<b>Relationship:</b>", styles['Normal']), Paragraph(relationship)],
-        [Paragraph("<b>Family / Earning:</b>", styles['Normal']), Paragraph(f"Family: {family_members} | Earning: {earning_members}", styles['Normal']), Paragraph("<b>Ownership:</b>", styles['Normal']), Paragraph(ownership)],
-        [Paragraph("<b>Construction:</b>", styles['Normal']), Paragraph(construction, styles['Normal']), Paragraph("<b>Purpose:</b>", styles['Normal']), Paragraph("SURYA GHAR LOAN", styles['Normal'])],
-        [Paragraph("<b>Verifier Name:</b>", styles['Normal']), Paragraph(verifier_name, styles['Normal']), Paragraph("<b>Final Status:</b>", styles['Normal']), Paragraph("<b><font color='green'>POSITIVE</font></b>", styles['Normal'])],
+        [Paragraph("<b>Address Confirmed:</b>", styles['Normal']), Paragraph(address_confirmed, styles['Normal']), Paragraph("<b>Person Met:</b>", styles['Normal']), Paragraph(person_met)],
+        [Paragraph("<b>Relationship:</b>", styles['Normal']), Paragraph(relationship, styles['Normal']), Paragraph("<b>Marital Status:</b>", styles['Normal']), Paragraph(marital_status)],
+        [Paragraph("<b>Family / Earning:</b>", styles['Normal']), Paragraph(f"Family: {family_members} | Earning: {earning_members}", styles['Normal']), Paragraph("<b>Children:</b>", styles['Normal']), Paragraph(children)],
+        [Paragraph("<b>Spouse Working:</b>", styles['Normal']), Paragraph(is_spouse_working, styles['Normal']), Paragraph("<b>Details:</b>", styles['Normal']), Paragraph(spouse_details)],
+        [Paragraph("<b>Ownership:</b>", styles['Normal']), Paragraph(ownership, styles['Normal']), Paragraph("<b>Years in House:</b>", styles['Normal']), Paragraph(years_in_house)],
+        [Paragraph("<b>Construction:</b>", styles['Normal']), Paragraph(construction, styles['Normal']), Paragraph("<b>Roof Type:</b>", styles['Normal']), Paragraph(roof_type)],
+        [Paragraph("<b>Approx Area:</b>", styles['Normal']), Paragraph(approx_area, styles['Normal']), Paragraph("<b>Floor:</b>", styles['Normal']), Paragraph(floor)],
+        [Paragraph("<b>Assets Seen:</b>", styles['Normal']), Paragraph(assets_seen, styles['Normal']), Paragraph("<b>Vehicle:</b>", styles['Normal']), Paragraph(vehicle)],
+        [Paragraph("<b>Political Portrait:</b>", styles['Normal']), Paragraph(portrait, styles['Normal']), Paragraph("<b>Purpose:</b>", styles['Normal']), Paragraph(purpose)],
+        [Paragraph("<b>Loans Taken:</b>", styles['Normal']), Paragraph(loans_taken, styles['Normal']), Paragraph("<b>Financier / EMI:</b>", styles['Normal']), Paragraph(f"{financier} / {emi}")],
+        [Paragraph("<b>Neighbor Feedback:</b>", styles['Normal']), Paragraph(neighbors_feedback, styles['Normal']), Paragraph("<b>Remarks:</b>", styles['Normal']), Paragraph(f"<b><font color='green'>{remarks}</font></b>")],
+        [Paragraph("<b>Recommendation:</b>", styles['Normal']), Paragraph(recommendation, styles['Normal']), Paragraph("<b>Status:</b>", styles['Normal']), Paragraph("Positive")]
     ]
     
-    t = Table(data, colWidths=[110, 160, 90, 180])
+    t = Table(data, colWidths=[110, 160, 100, 190])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F9F9F9')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CCCCCC')),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#DDDDDD')),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
     ]))
     
     story.append(t)
-    story.append(Spacer(1, 15))
+    story.append(Spacer(1, 8))
+    
+    story.append(Paragraph(f"<b>Verifier Remarks:</b> {verifier_remarks}", styles['Normal']))
+    story.append(Spacer(1, 8))
     
     story.append(Paragraph("<b>Verification Photos:</b>", styles['Heading2']))
-    story.append(Spacer(1, 5))
+    story.append(Spacer(1, 4))
     
     img_data = []
     temp_files = []
@@ -104,46 +131,44 @@ if submitted:
             with open(temp_path, "wb") as f:
                 f.write(up_file.getbuffer())
             temp_files.append(temp_path)
-            img_data.append(RLImage(temp_path, width=220, height=160))
+            img_data.append(RLImage(temp_path, width=250, height=170))
             
     if len(img_data) > 0:
         while len(img_data) < 2:
             img_data.append("")
-        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[270, 270])
+        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[280, 280])
         photo_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ]))
         story.append(photo_table)
 
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 10))
     
-    # চহী আৰু চীলৰ অংশ (Authorized Signature with Seal)
+    # Verifier Name r uporot Seal thakiba
     sig_data = [
-        [Paragraph("<b>Neighbor’s Feedback:</b> Good", styles['Normal']), Paragraph(f"<b>Verifier Name:</b> {verifier_name}<br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])]
+        [Paragraph("", styles['Normal']), Paragraph(f"<b>Verifier Name: {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])]
     ]
-    sig_table = Table(sig_data, colWidths=[270, 270])
+    sig_table = Table(sig_data, colWidths=[280, 280])
     story.append(sig_table)
 
     doc.build(story)
     pdf_buffer.seek(0)
     
-    # --- Word (.docx) Generation ---
+    # --- Word Generation ---
     doc_word = Document()
     doc_word.add_heading("TIGER 4 INDIA LIMITED", level=1)
-    doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070\nE-mail: tigindialtd@gmail.com | Mobile: 8282864451")
+    doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India\nE-mail id: tigindialtd@gmail.com | Mobile: 8282864451")
     doc_word.add_heading("RESIDENCE VERIFICATION REPORT", level=2)
-    
     doc_word.add_paragraph(f"Branch Name: {branch_name} | Lifting Date: {lifting_date}")
     doc_word.add_paragraph(f"Name of Applicant: {applicant_name}")
     doc_word.add_paragraph(f"Residence Address: {address}")
     doc_word.add_paragraph(f"Date of Visit: {date_of_visit} | Time: {time_of_visit}")
-    doc_word.add_paragraph(f"Person Met: {person_met} | Relationship: {relationship}")
-    doc_word.add_paragraph(f"Total Family Members: {family_members} | Earning Members: {earning_members}")
-    doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction}")
-    doc_word.add_paragraph(f"Verifier Name: {verifier_name}")
-    doc_word.add_paragraph("Remarks: Positive")
-    doc_word.add_paragraph("\nAuthorized Signature with Seal")
+    doc_word.add_paragraph(f"Person Met: {person_met} ({relationship})")
+    doc_word.add_paragraph(f"Family Members: {family_members} | Earning: {earning_members}")
+    doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
+    doc_word.add_paragraph(f"Verifier Remarks: {verifier_remarks}")
+    doc_word.add_paragraph(f"\nVerifier Name: {verifier_name}\nAuthorized Signature with Seal")
     
     word_buffer = BytesIO()
     doc_word.save(word_buffer)

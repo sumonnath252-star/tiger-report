@@ -2,7 +2,7 @@ import os
 from io import BytesIO
 import streamlit as st
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, Macro
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from docx import Document
@@ -10,7 +10,7 @@ from docx import Document
 st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("Formor tathyasumuh puron kori PDF aru Word duytai download korok:")
+st.write("ফৰ্মৰ তথ্যসমূহ পূৰণ কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
 
 with st.form("verification_form"):
     st.subheader("📋 Applicant & Visit Details")
@@ -64,7 +64,7 @@ with st.form("verification_form"):
         recommendation = st.text_input("Recommendation", "Yes")
         verifier_name = st.text_input("Verifier Name", "EKRAMUL HUSSAIN")
 
-    st.subheader("📸 Upload Verification Photos (Duikhon Photo)")
+    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
@@ -147,28 +147,26 @@ if submitted:
 
     story.append(Spacer(1, 10))
     
-    # Seal tu verifier name r thik uporot stack korar bebohstha
-    seal_element = ""
+    # Seal tu verifier name r majot (overlap/middle) bohibar bebohstha
     if uploaded_seal is not None:
         seal_path = "temp_seal.png"
         with open(seal_path, "wb") as f:
             f.write(uploaded_seal.getbuffer())
         temp_files.append(seal_path)
-        seal_element = RLImage(seal_path, width=80, height=80)
+        seal_img = RLImage(seal_path, width=100, height=100)
+        
+        # Tableot seal aru name etake cell-ot rakhim jাতে seal tu name r uporot majot bohe
+        name_para = Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])
+        sig_table = Table([[seal_img], [name_para]], colWidths=[250])
+        sig_table.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0,0), (-1,0), -45), # Seal aru text keneke overlap hobo taar adjust
+        ]))
     else:
-        seal_element = Paragraph("<b>[ Seal Placeholder ]</b>", styles['Normal'])
+        name_para = Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])
+        sig_table = Table([[name_para]], colWidths=[250])
 
-    sig_cell_contents = [
-        seal_element,
-        Spacer(1, 4),
-        Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><b>Authorized Signature with Seal</b>", styles['Normal'])
-    ]
-    
-    sig_table = Table([[sig_cell_contents]], colWidths=[250])
-    sig_table.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('LEFTPADDING', (0,0), (-1,-1), 0),
-    ]))
     story.append(sig_table)
 
     doc.build(story)

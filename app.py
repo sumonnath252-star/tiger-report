@@ -10,7 +10,7 @@ from docx import Document
 st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("Formor tathyasumuh puron kori PDF aru Word duytai download korok:")
+st.write("ফৰ্মৰ তথ্যসমূহ পূৰণ কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
 
 with st.form("verification_form"):
     st.subheader("📋 Applicant & Visit Details")
@@ -64,7 +64,7 @@ with st.form("verification_form"):
         recommendation = st.text_input("Recommendation", "Yes")
         verifier_name = st.text_input("Verifier Name", "EKRAMUL HUSSAIN")
 
-    st.subheader("📸 Upload Verification Photos (Duikhon Photo)")
+    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
@@ -75,55 +75,56 @@ with st.form("verification_form"):
 
 if submitted:
     pdf_buffer = BytesIO()
-    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=25)
+    # 1 Page ত ফিট কৰিবলৈ Top, Bottom, Left, Right Margin কমাই দিয়া হৈছে
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=15, bottomMargin=15)
     story = []
     
     styles = getSampleStyleSheet()
-    # Professional Corporate Theme using #006633 color
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=14, textColor=colors.HexColor('#006633'), alignment=1, spaceAfter=4)
-    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Normal'], fontSize=8, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=10)
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=12, textColor=colors.HexColor('#006633'), alignment=1, spaceAfter=2)
+    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Normal'], fontSize=7.5, textColor=colors.HexColor('#555555'), alignment=1, spaceAfter=6)
+    cell_style = ParagraphStyle('CellStyle', parent=styles['Normal'], fontSize=8, leading=10)
     
     story.append(Paragraph("<b>TIGER 4 INDIA LIMITED</b>", title_style))
     story.append(Paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India<br/>E-mail id: tigindialtd@gmail.com | Mobile: 8282864451", subtitle_style))
-    story.append(Paragraph("<b><u>RESIDENCE VERIFICATION REPORT</u></b>", ParagraphStyle('H2', parent=title_style, fontSize=11, textColor=colors.HexColor('#222222'))))
-    story.append(Spacer(1, 6))
+    story.append(Paragraph("<b><u>RESIDENCE VERIFICATION REPORT</u></b>", ParagraphStyle('H2', parent=title_style, fontSize=10, textColor=colors.HexColor('#222222'))))
+    story.append(Spacer(1, 4))
     
     data = [
-        [Paragraph("<b>Branch Name:</b>", styles['Normal']), Paragraph(branch_name, styles['Normal']), Paragraph("<b>Lifting Date:</b>", styles['Normal']), Paragraph(lifting_date, styles['Normal'])],
-        [Paragraph("<b>Applicant Name:</b>", styles['Normal']), Paragraph(applicant_name, styles['Normal']), Paragraph("<b>Date of Visit:</b>", styles['Normal']), Paragraph(date_of_visit)],
-        [Paragraph("<b>Address:</b>", styles['Normal']), Paragraph(address, styles['Normal']), Paragraph("<b>Time of Visit:</b>", styles['Normal']), Paragraph(time_of_visit)],
-        [Paragraph("<b>Address Confirmed:</b>", styles['Normal']), Paragraph(address_confirmed, styles['Normal']), Paragraph("<b>Person Met:</b>", styles['Normal']), Paragraph(person_met)],
-        [Paragraph("<b>Relationship:</b>", styles['Normal']), Paragraph(relationship, styles['Normal']), Paragraph("<b>Marital Status:</b>", styles['Normal']), Paragraph(marital_status)],
-        [Paragraph("<b>Family / Earning:</b>", styles['Normal']), Paragraph(f"Family: {family_members} | Earning: {earning_members}", styles['Normal']), Paragraph("<b>Children:</b>", styles['Normal']), Paragraph(children)],
-        [Paragraph("<b>Spouse Working:</b>", styles['Normal']), Paragraph(is_spouse_working, styles['Normal']), Paragraph("<b>Details:</b>", styles['Normal']), Paragraph(spouse_details)],
-        [Paragraph("<b>Ownership:</b>", styles['Normal']), Paragraph(ownership, styles['Normal']), Paragraph("<b>Years in House:</b>", styles['Normal']), Paragraph(years_in_house)],
-        [Paragraph("<b>Construction:</b>", styles['Normal']), Paragraph(construction, styles['Normal']), Paragraph("<b>Roof Type:</b>", styles['Normal']), Paragraph(roof_type)],
-        [Paragraph("<b>Approx Area:</b>", styles['Normal']), Paragraph(approx_area, styles['Normal']), Paragraph("<b>Floor:</b>", styles['Normal']), Paragraph(floor)],
-        [Paragraph("<b>Assets Seen:</b>", styles['Normal']), Paragraph(assets_seen, styles['Normal']), Paragraph("<b>Vehicle:</b>", styles['Normal']), Paragraph(vehicle)],
-        [Paragraph("<b>Political Portrait:</b>", styles['Normal']), Paragraph(portrait, styles['Normal']), Paragraph("<b>Purpose:</b>", styles['Normal']), Paragraph(purpose)],
-        [Paragraph("<b>Loans Taken:</b>", styles['Normal']), Paragraph(loans_taken, styles['Normal']), Paragraph("<b>Financier / EMI:</b>", styles['Normal']), Paragraph(f"{financier} / {emi}")],
-        [Paragraph("<b>Neighbor Feedback:</b>", styles['Normal']), Paragraph(neighbors_feedback, styles['Normal']), Paragraph("<b>Remarks:</b>", styles['Normal']), Paragraph(f"<b><font color='green'>{remarks}</font></b>")],
-        [Paragraph("<b>Recommendation:</b>", styles['Normal']), Paragraph(recommendation, styles['Normal']), Paragraph("<b>Status:</b>", styles['Normal']), Paragraph("Positive")]
+        [Paragraph("<b>Branch Name:</b>", cell_style), Paragraph(branch_name, cell_style), Paragraph("<b>Lifting Date:</b>", cell_style), Paragraph(lifting_date, cell_style)],
+        [Paragraph("<b>Applicant Name:</b>", cell_style), Paragraph(applicant_name, cell_style), Paragraph("<b>Date of Visit:</b>", cell_style), Paragraph(date_of_visit, cell_style)],
+        [Paragraph("<b>Address:</b>", cell_style), Paragraph(address, cell_style), Paragraph("<b>Time of Visit:</b>", cell_style), Paragraph(time_of_visit, cell_style)],
+        [Paragraph("<b>Address Confirmed:</b>", cell_style), Paragraph(address_confirmed, cell_style), Paragraph("<b>Person Met:</b>", cell_style), Paragraph(person_met, cell_style)],
+        [Paragraph("<b>Relationship:</b>", cell_style), Paragraph(relationship, cell_style), Paragraph("<b>Marital Status:</b>", cell_style), Paragraph(marital_status, cell_style)],
+        [Paragraph("<b>Family / Earning:</b>", cell_style), Paragraph(f"Family: {family_members} | Earning: {earning_members}", cell_style), Paragraph("<b>Children:</b>", cell_style), Paragraph(children, cell_style)],
+        [Paragraph("<b>Spouse Working:</b>", cell_style), Paragraph(is_spouse_working, cell_style), Paragraph("<b>Details:</b>", cell_style), Paragraph(spouse_details, cell_style)],
+        [Paragraph("<b>Ownership:</b>", cell_style), Paragraph(ownership, cell_style), Paragraph("<b>Years in House:</b>", cell_style), Paragraph(years_in_house, cell_style)],
+        [Paragraph("<b>Construction:</b>", cell_style), Paragraph(construction, cell_style), Paragraph("<b>Roof Type:</b>", cell_style), Paragraph(roof_type, cell_style)],
+        [Paragraph("<b>Approx Area:</b>", cell_style), Paragraph(approx_area, cell_style), Paragraph("<b>Floor:</b>", cell_style), Paragraph(floor, cell_style)],
+        [Paragraph("<b>Assets Seen:</b>", cell_style), Paragraph(assets_seen, cell_style), Paragraph("<b>Vehicle:</b>", cell_style), Paragraph(vehicle, cell_style)],
+        [Paragraph("<b>Political Portrait:</b>", cell_style), Paragraph(portrait, cell_style), Paragraph("<b>Purpose:</b>", cell_style), Paragraph(purpose, cell_style)],
+        [Paragraph("<b>Loans Taken:</b>", cell_style), Paragraph(loans_taken, cell_style), Paragraph("<b>Financier / EMI:</b>", cell_style), Paragraph(f"{financier} / {emi}", cell_style)],
+        [Paragraph("<b>Neighbor Feedback:</b>", cell_style), Paragraph(neighbors_feedback, cell_style), Paragraph("<b>Remarks:</b>", cell_style), Paragraph(f"<b><font color='green'>{remarks}</font></b>", cell_style)],
+        [Paragraph("<b>Recommendation:</b>", cell_style), Paragraph(recommendation, cell_style), Paragraph("<b>Status:</b>", cell_style), Paragraph("Positive", cell_style)]
     ]
     
-    t = Table(data, colWidths=[110, 160, 100, 190])
+    t = Table(data, colWidths=[110, 160, 100, 202])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F4F9F4')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#006633')),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#C2D6C2')),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 2),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
     ]))
     
     story.append(t)
-    story.append(Spacer(1, 8))
-    
-    story.append(Paragraph(f"<b>Verifier Remarks:</b> {verifier_remarks}", styles['Normal']))
-    story.append(Spacer(1, 8))
-    
-    story.append(Paragraph("<b>Verification Photos:</b>", styles['Heading2']))
     story.append(Spacer(1, 4))
+    
+    story.append(Paragraph(f"<b>Verifier Remarks:</b> {verifier_remarks}", cell_style))
+    story.append(Spacer(1, 4))
+    
+    story.append(Paragraph("<b>Verification Photos:</b>", ParagraphStyle('H3', parent=styles['Heading3'], fontSize=9, textColor=colors.HexColor('#006633'))))
+    story.append(Spacer(1, 2))
     
     img_data = []
     temp_files = []
@@ -134,37 +135,38 @@ if submitted:
             with open(temp_path, "wb") as f:
                 f.write(up_file.getbuffer())
             temp_files.append(temp_path)
-            img_data.append(RLImage(temp_path, width=250, height=170))
+            # ফটোৰ আকাৰটো ১ পেজত ফিট হোৱাকৈ সৰু কৰা হৈছে
+            img_data.append(RLImage(temp_path, width=220, height=130))
             
     if len(img_data) > 0:
         while len(img_data) < 2:
             img_data.append("")
-        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[280, 280])
+        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[286, 286])
         photo_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ]))
         story.append(photo_table)
 
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
     
-    # Seal overlapping nicely over the verifier name middle section
+    # Seal আৰু Verifier Name
     if uploaded_seal is not None:
         seal_path = "temp_seal.png"
         with open(seal_path, "wb") as f:
             f.write(uploaded_seal.getbuffer())
         temp_files.append(seal_path)
-        seal_img = RLImage(seal_path, width=100, height=100)
+        seal_img = RLImage(seal_path, width=80, height=80)
         
-        name_para = Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])
+        name_para = Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", cell_style)
         sig_table = Table([[seal_img], [name_para]], colWidths=[250])
         sig_table.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'LEFT'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,0), -45),
+            ('BOTTOMPADDING', (0,0), (-1,0), -38),
         ]))
     else:
-        name_para = Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", styles['Normal'])
+        name_para = Paragraph(f"<b>Verifier Name: - {verifier_name}</b><br/><br/><b>Authorized Signature with Seal</b>", cell_style)
         sig_table = Table([[name_para]], colWidths=[250])
 
     story.append(sig_table)

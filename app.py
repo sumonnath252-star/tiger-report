@@ -24,8 +24,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from docx import Document
 
-# initial_sidebar_state="expanded" ৰ দ্বাৰা Sidebar টো সদায় মুকলি হৈ থাকিব
-st.set_page_config(page_title="Residence Verification Report Generator", layout="centered", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
 
@@ -97,42 +96,8 @@ def send_whatsapp_otp(phone, otp_code):
     except Exception as e:
         return False
 
-# ----------------- OWNER WHATSAPP OTP AUTHENTICATION SIDEBAR -----------------
-st.sidebar.header("🔐 Owner WhatsApp OTP Login")
-st.sidebar.write("Owner Mobile: **8638031496**")
-
-if not st.session_state.is_authenticated:
-    if st.sidebar.button("Send WhatsApp OTP"):
-        otp = str(random.randint(1000, 9999))
-        st.session_state.generated_otp = otp
-        
-        success = send_whatsapp_otp("8638031496", otp)
-        st.session_state.otp_sent = True
-        
-        if success:
-            st.sidebar.success("✅ OTP sent to your WhatsApp (8638031496)!")
-        else:
-            st.sidebar.warning(f"⚠️ CallMeBot API Key not set yet!\n\n👉 Your Testing OTP is: **{otp}**")
-
-    if st.session_state.otp_sent:
-        entered_otp = st.sidebar.text_input("Enter 4-digit OTP", type="password", key="otp_input")
-        if st.sidebar.button("Verify OTP"):
-            if entered_otp == st.session_state.generated_otp:
-                st.session_state.is_authenticated = True
-                st.sidebar.success("🎉 Login Successful!")
-                st.rerun()
-            else:
-                st.sidebar.error("❌ Invalid OTP. Try again.")
-else:
-    st.sidebar.success("🔓 Logged in as Owner (8638031496)")
-    if st.sidebar.button("Logout"):
-        st.session_state.is_authenticated = False
-        st.session_state.otp_sent = False
-        st.rerun()
-# ---------------------------------------------------------------------
-
 total_reports = len(st.session_state.report_history)
-st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
+st.info(f"📊 Muth bonuwa report-or songkha (Total Reports Generated): **{total_reports}**")
 
 st.subheader("⚙️ Quick Status Selection")
 col_s1, col_s2 = st.columns(2)
@@ -203,7 +168,7 @@ with st.form("verification_form"):
         recommendation = st.text_input("Recommendation", "Yes")
         verifier_name = st.text_input("Verifier Name", "EKRAMUL HUSSAIN")
 
-    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
+    st.subheader("📸 Upload Verification Photos (Dukhan photo upload korok)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
@@ -374,9 +339,42 @@ if submitted:
     with col_d2:
         st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-if st.session_state.is_authenticated:
+# ----------------- MAIN PAGE-OR TOLOT OWNER WHATSAPP OTP LOGIN SECTION -----------------
+st.markdown("---")
+st.subheader("🔐 Owner WhatsApp OTP Login (Main Page)")
+st.write("Owner Mobile: **8638031496**")
+
+if not st.session_state.is_authenticated:
+    if st.button("Send WhatsApp OTP"):
+        otp = str(random.randint(1000, 9999))
+        st.session_state.generated_otp = otp
+        
+        success = send_whatsapp_otp("8638031496", otp)
+        st.session_state.otp_sent = True
+        
+        if success:
+            st.success("✅ OTP sent to your WhatsApp (8638031496)!")
+        else:
+            st.warning(f"⚠️ CallMeBot API Key not set yet!\n\n👉 Your Testing OTP is: **{otp}**")
+
+    if st.session_state.otp_sent:
+        entered_otp = st.text_input("Enter 4-digit OTP", type="password", key="otp_input_main")
+        if st.button("Verify OTP"):
+            if entered_otp == st.session_state.generated_otp:
+                st.session_state.is_authenticated = True
+                st.success("🎉 Login Successful!")
+                st.rerun()
+            else:
+                st.error("❌ Invalid OTP. Try again.")
+else:
+    st.success("🔓 Logged in as Owner (8638031496)")
+    if st.button("Logout"):
+        st.session_state.is_authenticated = False
+        st.session_state.otp_sent = False
+        st.rerun()
+
     st.markdown("---")
-    st.subheader("🔐 Owner Dashboard (WhatsApp: 8638031496): Saved Reports & Past Downloads")
+    st.subheader("📁 Owner Dashboard: Saved Reports & Past Downloads")
     
     if len(st.session_state.report_history) > 0:
         for idx, item in enumerate(st.session_state.report_history):
@@ -406,6 +404,4 @@ if st.session_state.is_authenticated:
                         key=f"word_{idx}"
                     )
     else:
-        st.info("এতিয়ালৈকে কোনো ৰিপ'ৰ্ট বনোৱা হোৱা নাই।")
-else:
-    st.sidebar.warning("🔒 হিষ্ট্ৰী চাবলৈ 'Send WhatsApp OTP' বুটাম টিপক (Key নথাকিলে স্ক্ৰীণতে OTP দেখুৱাই দিব)।")
+        st.info("Etiyolike kunu report bonua huwa nai.")

@@ -95,7 +95,7 @@ else:
         st.rerun()
 # ---------------------------------------------------------------------
 
-# মুঠ ৰিপ'ৰ্ট কাউণ্টাৰ সদায় ওপৰত দেখুৱাব
+# মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Counter)
 total_reports = len(st.session_state.report_history)
 st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
 
@@ -341,7 +341,7 @@ if submitted:
     with col_d2:
         st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-# ----------------- অনাৰ (Owner) ভাৰिफাইড হ'লেহে হিষ্ট্ৰী দেখা যাব -----------------
+# ----------------- কেৱল অনাৰ (Owner) ভাৰिफাইড হ'লেহে হিষ্ট্ৰী দেখা যাব -----------------
 if st.session_state.is_authenticated:
     st.markdown("---")
     st.subheader("🔐 Owner Dashboard (WhatsApp: 8638031496): Saved Reports & Past Downloads")

@@ -28,7 +28,7 @@ st.set_page_config(page_title="Residence Verification Report Generator", layout=
 
 st.title("🏡 Residence Verification Report Generator")
 
-# ----------------- LOCAL FILE STORAGE FOR PERMANENT HISTORY -----------------
+# ----------------- LOCAL JSON STORAGE FOR PERMANENT HISTORY -----------------
 HISTORY_FILE = "report_history.json"
 
 def load_history():
@@ -41,7 +41,6 @@ def load_history():
     return []
 
 def save_history(history_list):
-    # JSON ত file objects বা Bytes সংৰক্ষণ কৰিব নোৱাৰি, সেয়ে কেৱল text/data বোৰ সাঁচি ৰখা হয়
     serializable_list = []
     for item in history_list:
         serializable_list.append({
@@ -56,8 +55,7 @@ def save_history(history_list):
 
 # Session State ত স্থায়ী ফাইলৰ পৰা ডাটা লোড কৰা
 if 'report_history' not in st.session_state:
-    loaded_data = load_history()
-    st.session_state.report_history = loaded_data
+    st.session_state.report_history = load_history()
 
 if 'otp_sent' not in st.session_state:
     st.session_state.otp_sent = False
@@ -123,7 +121,7 @@ else:
         st.rerun()
 # ---------------------------------------------------------------------
 
-# মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Counter)
+# মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Counter) - এতিয়া ৰিফ্ৰেচ কৰিলে শূন্য নহ'ব
 total_reports = len(st.session_state.report_history)
 st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
 
@@ -347,7 +345,6 @@ if submitted:
     
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # নতুন ৰিপ'ৰ্টটো হিষ্ট্ৰীত যোগ কৰা হৈছে
     new_record = {
         "Timestamp": current_time,
         "Applicant Name": applicant_name,
@@ -356,9 +353,8 @@ if submitted:
         "FullData": current_data
     }
     
+    # নতুন ৰিপ'ৰ্ট যোগ কৰা আৰু JSON ফাইলত স্থায়ীভাৱে Save কৰা
     st.session_state.report_history.append(new_record)
-    
-    # স্থায়ী ফাইলত (JSON) চিজ কৰি ৰখা হৈছে যাতে ৰিফ্ৰেচ কৰিলে নাইকিয়া নহয়
     save_history(st.session_state.report_history)
 
     safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
@@ -383,7 +379,6 @@ if st.session_state.is_authenticated:
             with st.expander(f"📁 {idx+1}. {item['Applicant Name']} (Branch: {item['Branch Name']} - {item['Timestamp']})"):
                 st.write(f"**Customer Mobile:** {item['Customer Mobile']}")
                 
-                # পুৰণি ফটো আৰু ছীল নথকাৰ বাবে খালী দি নতুনকৈ জেনারেট কৰিবলৈ দিয়া হৈছে
                 old_pdf, old_word = generate_report_files(item['FullData'], None, None, None)
                 
                 s_app = "".join(c if c.isalnum() else "_" for c in item['Applicant Name'])

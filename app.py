@@ -75,7 +75,7 @@ col_s1, col_s2 = st.columns(2)
 with col_s1:
     solar_install = st.selectbox("Solar Installed?", ["Yes", "No"], key="solar_select")
 with col_s2:
-    person_met = st.text_input("Person Met", "OSMAN ALI", key="person_met_quick")
+    person_met = st.text_input("Person Met *", "OSMAN ALI", key="person_met_quick")
 
 if solar_install == "No":
     auto_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
@@ -83,20 +83,20 @@ else:
     auto_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
 
 with st.form("verification_form"):
-    st.subheader("📋 Applicant & Visit Details")
+    st.subheader("📋 Applicant & Visit Details (Fields marked with * are mandatory)")
     col1, col2 = st.columns(2)
     
     with col1:
-        branch_name = st.text_input("Branch Name", "SBI SAMAGURI BRANCH")
-        lifting_date = st.text_input("Lifting Date", "03.10.2026")
-        applicant_name = st.text_input("Name of Applicant", "USUF ALI")
-        customer_mobile = st.text_input("Customer Mobile Number", "9876543210")
+        branch_name = st.text_input("Branch Name *", "SBI SAMAGURI BRANCH")
+        lifting_date = st.text_input("Lifting Date *", "03.10.2026")
+        applicant_name = st.text_input("Name of Applicant *", "USUF ALI")
+        customer_mobile = st.text_input("Customer Mobile Number *", "9876543210")
         occupation = st.text_input("Occupation", "BUSINESS")
-        address = st.text_area("Residence Address", "VILL:LALUNG GAON, P/O-KASORI P/S-JURIA PINCODE-782124 DIST: NAGAON, ASSAM")
-        date_of_visit = st.text_input("Date of Visit", "03.10.2026")
+        address = st.text_area("Residence Address *", "VILL:LALUNG GAON, P/O-KASORI P/S-JURIA PINCODE-782124 DIST: NAGAON, ASSAM")
+        date_of_visit = st.text_input("Date of Visit *", "03.10.2026")
         time_of_visit = st.text_input("Time of Visit", "09:33:00 AM")
         address_confirmed = st.text_input("Address Confirmed", "YES")
-        relationship = st.text_input("Relationship", "FATHER")
+        relationship = st.text_input("Relationship *", "FATHER")
         marital_status = st.text_input("Marital Status", "MARRIED")
         family_members = st.text_input("Total Family Members", "05")
         earning_members = st.text_input("Total Earning Members", "03")
@@ -263,52 +263,66 @@ def generate_report_files(data_dict, p1, p2, seal):
     return pdf_buffer, word_buffer
 
 if submitted:
-    if solar_install == "No":
-        final_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+    # Mandatory Validation Check
+    missing_fields = []
+    if not branch_name.strip(): missing_fields.append("Branch Name")
+    if not lifting_date.strip(): missing_fields.append("Lifting Date")
+    if not applicant_name.strip(): missing_fields.append("Name of Applicant")
+    if not customer_mobile.strip(): missing_fields.append("Customer Mobile Number")
+    if not address.strip(): missing_fields.append("Residence Address")
+    if not date_of_visit.strip(): missing_fields.append("Date of Visit")
+    if not relationship.strip(): missing_fields.append("Relationship")
+    if not person_met.strip(): missing_fields.append("Person Met")
+
+    if missing_fields:
+        st.error(f"❌ Please fill out all mandatory fields marked with (*): {', '.join(missing_fields)}")
     else:
-        final_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
+        if solar_install == "No":
+            final_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+        else:
+            final_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
 
-    current_data = {
-        "branch_name": branch_name, "lifting_date": lifting_date, "applicant_name": applicant_name,
-        "customer_mobile": customer_mobile, "occupation": occupation, "address": address,
-        "date_of_visit": date_of_visit, "time_of_visit": time_of_visit, "address_confirmed": address_confirmed,
-        "person_met": person_met, "relationship": relationship, "marital_status": marital_status,
-        "family_members": family_members, "earning_members": earning_members, "children": children,
-        "is_spouse_working": is_spouse_working, "spouse_details": spouse_details, "ownership": ownership,
-        "years_in_house": years_in_house, "construction": construction, "roof_type": roof_type,
-        "approx_area": approx_area, "floor": floor, "assets_seen": assets_seen, "vehicle": vehicle,
-        "portrait": portrait, "purpose": purpose, "financier": financier, "emi": emi,
-        "loans_taken": loans_taken, "neighbor_name": neighbor_name, "neighbor_mobile": neighbor_mobile,
-        "neighbors_feedback": neighbors_feedback, "solar_install": solar_install, "remarks": remarks,
-        "verifier_name": verifier_name, "final_verifier_remarks": final_verifier_remarks
-    }
+        current_data = {
+            "branch_name": branch_name, "lifting_date": lifting_date, "applicant_name": applicant_name,
+            "customer_mobile": customer_mobile, "occupation": occupation, "address": address,
+            "date_of_visit": date_of_visit, "time_of_visit": time_of_visit, "address_confirmed": address_confirmed,
+            "person_met": person_met, "relationship": relationship, "marital_status": marital_status,
+            "family_members": family_members, "earning_members": earning_members, "children": children,
+            "is_spouse_working": is_spouse_working, "spouse_details": spouse_details, "ownership": ownership,
+            "years_in_house": years_in_house, "construction": construction, "roof_type": roof_type,
+            "approx_area": approx_area, "floor": floor, "assets_seen": assets_seen, "vehicle": vehicle,
+            "portrait": portrait, "purpose": purpose, "financier": financier, "emi": emi,
+            "loans_taken": loans_taken, "neighbor_name": neighbor_name, "neighbor_mobile": neighbor_mobile,
+            "neighbors_feedback": neighbors_feedback, "solar_install": solar_install, "remarks": remarks,
+            "verifier_name": verifier_name, "final_verifier_remarks": final_verifier_remarks
+        }
 
-    pdf_buffer, word_buffer = generate_report_files(current_data, uploaded_photo1, uploaded_photo2, uploaded_seal)
-    
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    new_record = {
-        "Timestamp": current_time,
-        "Applicant Name": applicant_name,
-        "Branch Name": branch_name,
-        "Customer Mobile": customer_mobile,
-        "FullData": current_data
-    }
-    
-    st.session_state.report_history.append(new_record)
-    save_history(st.session_state.report_history)
+        pdf_buffer, word_buffer = generate_report_files(current_data, uploaded_photo1, uploaded_photo2, uploaded_seal)
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        new_record = {
+            "Timestamp": current_time,
+            "Applicant Name": applicant_name,
+            "Branch Name": branch_name,
+            "Customer Mobile": customer_mobile,
+            "FullData": current_data
+        }
+        
+        st.session_state.report_history.append(new_record)
+        save_history(st.session_state.report_history)
 
-    safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
-    safe_branch_name = "".join(c if c.isalnum() else "_" for c in branch_name)
-    file_prefix = f"{safe_applicant_name}_{safe_branch_name}"
+        safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
+        safe_branch_name = "".join(c if c.isalnum() else "_" for c in branch_name)
+        file_prefix = f"{safe_applicant_name}_{safe_branch_name}"
 
-    st.success("✨ Files successfully generated and logged in history!")
-    
-    col_d1, col_d2 = st.columns(2)
-    with col_d1:
-        st.download_button("📥 Download PDF", data=pdf_buffer, file_name=f"{file_prefix}_Report.pdf", mime="application/pdf")
-    with col_d2:
-        st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        st.success("✨ Files successfully generated and logged in history!")
+        
+        col_d1, col_d2 = st.columns(2)
+        with col_d1:
+            st.download_button("📥 Download PDF", data=pdf_buffer, file_name=f"{file_prefix}_Report.pdf", mime="application/pdf")
+        with col_d2:
+            st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
 # ----------------- SECURE OWNER PIN LOGIN (1234) & BACKUP/RESTORE -----------------
 st.markdown("---")
@@ -333,7 +347,6 @@ else:
     st.markdown("---")
     st.subheader("📁 Owner Dashboard: Backup & Restore History")
     
-    # Backup (Download history json)
     history_json_str = json.dumps(st.session_state.report_history, ensure_ascii=False, indent=4)
     st.download_button(
         label="📥 Download All History Backup (JSON)",
@@ -342,7 +355,6 @@ else:
         mime="application/json"
     )
 
-    # Restore (Upload history json)
     uploaded_history_file = st.file_uploader("📤 Restore History from Backup JSON", type=["json"], key="restore_json")
     if uploaded_history_file is not None:
         try:

@@ -1,6 +1,8 @@
 import os
 from io import BytesIO
 import streamlit as st
+import pandas as pd
+from datetime import datetime
 
 # CSS code to hide Streamlit branding
 hide_streamlit_style = """
@@ -21,7 +23,21 @@ from docx import Document
 st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
 
 st.title("🏡 Residence Verification Report Generator")
-st.write("ফৰ্মৰ তথ্যসমূহ পূৰণ কৰি PDF আৰু Word দুয়োটাই ডাউনলোড কৰক:")
+
+# ----------------- OWNER PASSWORD PROTECTION SECTION -----------------
+st.sidebar.header("🔐 Owner Dashboard Access")
+owner_password = st.sidebar.text_input("Enter Owner Password", type="password", value="")
+# আপুনি ইয়াত আপোনাৰ গোপন পাচৱৰ্ডটো সলনি কৰি ল'ব পাৰে (বৰ্তমানৰ পাচৱৰ্ড: admin123)
+CORRECT_PASSWORD = "admin123" 
+is_owner = (owner_password == CORRECT_PASSWORD)
+# ---------------------------------------------------------------------
+
+# Session State ত হিষ্ট্ৰী সংৰক্ষণ কৰিবলৈ
+if 'report_history' not in st.session_state:
+    st.session_state.report_history = []
+
+total_reports = len(st.session_state.report_history)
+st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
 
 # ----------------- ফৰ্মৰ বাহিৰত ডাইনেমিক ইনপুটসমূহ -----------------
 st.subheader("⚙️ Quick Status Selection")
@@ -221,6 +237,7 @@ if submitted:
     doc_word.add_paragraph(f"Family Members: {family_members} | Earning: {earning_members}")
     doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
     doc_word.add_paragraph(f"Neighbor Name: {neighbor_name} | Neighbor Mobile: {neighbor_mobile}")
+    doc_word.add_applicant = applicant_name
     doc_word.add_paragraph(f"Solar Installed: {solar_install}")
     doc_word.add_paragraph(f"Verifier Remarks: {final_verifier_remarks}")
     doc_word.add_paragraph(f"\nVerifier Name: - {verifier_name}\nAuthorized Signature with Seal")
@@ -233,12 +250,23 @@ if submitted:
         if os.path.exists(tf):
             os.remove(tf)
             
-    # ফাইলৰ নামত Applicant Name আৰু Bank/Branch Name যোগ কৰা হৈছে (Space বোৰ _ লৈ সলনি কৰা হৈছে)
+    # হিষ্ট্ৰী ডেটাত এন্ট্ৰি যোগ কৰা হৈছে
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.session_state.report_history.append({
+        "Timestamp": current_time,
+        "Applicant Name": applicant_name,
+        "Customer Mobile": customer_mobile,
+        "Branch Name": branch_name,
+        "Occupation": occupation,
+        "Solar Installed": solar_install,
+        "Verifier Name": verifier_name
+    })
+
     safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
     safe_branch_name = "".join(c if c.isalnum() else "_" for c in branch_name)
     file_prefix = f"{safe_applicant_name}_{safe_branch_name}"
 
-    st.success("✨ Files successfully generated!")
+    st.success("✨ Files successfully generated and logged in history!")
     
     col_d1, col_d2 = st.columns(2)
     with col_d1:
@@ -255,3 +283,24 @@ if submitted:
             file_name=f"{file_prefix}_Report.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
+
+# ----------------- কেৱল অনাৰ (Owner) পাছৱৰ্ড দিলেহে হিষ্ট্ৰী দেখা যাব -----------------
+if is_owner:
+    st.markdown("---")
+    st.subheader("🔐 Owner Dashboard: Saved Reports History")
+    
+    if len(st.session_state.report_history) > 0:
+        df_history = pd.DataFrame(st.session_state.report_history)
+        st.dataframe(df_history, use_container_width=True)
+        
+        csv_data = df_history.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download All History (Excel/CSV)",
+            data=csv_data,
+            file_name="All_Verification_Reports_History.csv",
+            mime="text/csv"
+        )
+    else:
+        st.info("এতিয়ালৈকে কোনো ৰিপ'ৰ্ট বনোৱা হোৱা নাই।")
+else:
+    st.sidebar.warning("🔒 হিষ্ট্ৰী চাবলৈ সঠিক পাছৱৰ্ড দিয়ক।")

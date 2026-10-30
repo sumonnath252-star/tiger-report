@@ -228,44 +228,4 @@ def generate_report_files(data_dict, p1, p2, seal):
         sig_table = Table([[seal_img], [name_para]], colWidths=[250])
         sig_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'LEFT'), ('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('BOTTOMPADDING', (0,0), (-1,0), -38)]))
     else:
-        name_para = Paragraph(f"<b>Verifier Name: - {data_dict['verifier_name']}</b><br/><br/><b>Authorized Signature with Seal</b>", cell_style)
-        sig_table = Table([[name_para]], colWidths=[250])
-
-    story.append(sig_table)
-    doc.build(story)
-    pdf_buffer.seek(0)
-    
-    doc_word = Document()
-    doc_word.add_heading("TIGER 4 INDIA LIMITED", level=1)
-    doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India\nE-mail id: tigindialtd@gmail.com | Mobile: 8282864451")
-    doc_word.add_heading("RESIDENCE VERIFICATION REPORT", level=2)
-    doc_word.add_paragraph(f"Branch Name: {data_dict['branch_name']} | Lifting Date: {data_dict['lifting_date']}")
-    doc_word.add_paragraph(f"Name of Applicant: {data_dict['applicant_name']} | Customer Mobile: {data_dict['customer_mobile']}")
-    doc_word.add_paragraph(f"Occupation: {data_dict['occupation']}")
-    doc_word.add_paragraph(f"Residence Address: {data_dict['address']}")
-    doc_word.add_paragraph(f"Date of Visit: {data_dict['date_of_visit']} | Time: {data_dict['time_of_visit']}")
-    doc_word.add_paragraph(f"Person Met: {data_dict['person_met']} ({data_dict['relationship']})")
-    doc_word.add_paragraph(f"Family Members: {data_dict['family_members']} | Earning: {data_dict['earning_members']}")
-    doc_word.add_paragraph(f"Ownership: {data_dict['ownership']} | Construction: {data_dict['construction']} | Roof: {data_dict['roof_type']}")
-    doc_word.add_paragraph(f"Neighbor Name: {data_dict['neighbor_name']} | Neighbor Mobile: {data_dict['neighbor_mobile']}")
-    doc_word.add_paragraph(f"Solar Installed: {data_dict['solar_install']}")
-    doc_word.add_paragraph(f"Verifier Remarks: {data_dict['final_verifier_remarks']}")
-    doc_word.add_paragraph(f"\nVerifier Name: - {data_dict['verifier_name']}\nAuthorized Signature with Seal")
-    
-    word_buffer = BytesIO()
-    doc_word.save(word_buffer)
-    word_buffer.seek(0)
-    
-    for tf in temp_files:
-        if os.path.exists(tf):
-            os.remove(tf)
-            
-    return pdf_buffer, word_buffer
-
-if submitted:
-    # Mandatory Validation Check including Time of Visit
-    missing_fields = []
-    if not branch_name.strip(): missing_fields.append("Branch Name")
-    if not lifting_date.strip(): missing_fields.append("Lifting Date")
-    if not applicant_name.strip(): missing_fields.append("Name of Applicant")
-    if not customer_mobile.strip():
+        name_para = Paragraph(f"<b>Verifier Name: - {data_dict['verifier_name']}</b><br/><br/><b>Authorized Signature with Seal</b>", cell_

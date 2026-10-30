@@ -76,7 +76,7 @@ with st.form("verification_form"):
         # Solar Install অপচন
         solar_install = st.selectbox("Solar Installed?", ["Yes", "No"])
         
-        # অট'মেটিক Remarks তৈয়াৰ কৰা লজিক (No দিলে Person Met ৰ নামটো ভৰাই দিব)
+        # অট'মেটিক Remarks লজিক (Yes বা No অনুসৰি)
         if solar_install == "Yes":
             default_remark = "I Visited At The Provided Address and found solar panel is successfully installed"
         else:

@@ -13,11 +13,6 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 from reportlab.lib.pagesizes import letter
-# Rest of your code goes here...
-import os
-from io import BytesIO
-import streamlit as st
-from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
@@ -36,6 +31,8 @@ with st.form("verification_form"):
         branch_name = st.text_input("Branch Name", "SBI SAMAGURI BRANCH")
         lifting_date = st.text_input("Lifting Date", "03.10.2026")
         applicant_name = st.text_input("Name of Applicant", "USUF ALI")
+        customer_mobile = st.text_input("Customer Mobile Number", "9876543210") # নতুন ফিল্ড
+        occupation = st.text_input("Occupation", "BUSINESS") # নতুন ফিল্ড
         address = st.text_area("Residence Address", "VILL:LALUNG GAON, P/O-KASORI P/S-JURIA PINCODE-782124 DIST: NAGAON, ASSAM")
         date_of_visit = st.text_input("Date of Visit", "03.10.2026")
         time_of_visit = st.text_input("Time of Visit", "09:33:00 AM")
@@ -72,6 +69,8 @@ with st.form("verification_form"):
         emi = st.text_input("EMI", "NA")
         accessibility = st.text_input("Accessibility of Office", "Easy")
     with col4:
+        neighbor_name = st.text_input("Neighbor Name", "RAHIM UDDIN") # নতুন ফিল্ড
+        neighbor_mobile = st.text_input("Neighbor Mobile Number", "9123456789") # নতুন ফিল্ড
         neighbors_feedback = st.text_input("Neighbor's Feedback", "GOOD")
         verifier_remarks = st.text_input("Verifier Remarks", "I Visited At The Provided Address and found solar panel is successfully installed")
         remarks = st.text_input("Remarks", "Positive")
@@ -91,7 +90,6 @@ with st.form("verification_form"):
 
 if submitted:
     pdf_buffer = BytesIO()
-    # 1 Page ত ফিট কৰিবলৈ Top, Bottom, Left, Right Margin কমাই দিয়া হৈছে
     doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=15, bottomMargin=15)
     story = []
     
@@ -107,7 +105,8 @@ if submitted:
     
     data = [
         [Paragraph("<b>Branch Name:</b>", cell_style), Paragraph(branch_name, cell_style), Paragraph("<b>Lifting Date:</b>", cell_style), Paragraph(lifting_date, cell_style)],
-        [Paragraph("<b>Applicant Name:</b>", cell_style), Paragraph(applicant_name, cell_style), Paragraph("<b>Date of Visit:</b>", cell_style), Paragraph(date_of_visit, cell_style)],
+        [Paragraph("<b>Applicant Name:</b>", cell_style), Paragraph(applicant_name, cell_style), Paragraph("<b>Customer Mobile:</b>", cell_style), Paragraph(customer_mobile, cell_style)],
+        [Paragraph("<b>Occupation:</b>", cell_style), Paragraph(occupation, cell_style), Paragraph("<b>Date of Visit:</b>", cell_style), Paragraph(date_of_visit, cell_style)],
         [Paragraph("<b>Address:</b>", cell_style), Paragraph(address, cell_style), Paragraph("<b>Time of Visit:</b>", cell_style), Paragraph(time_of_visit, cell_style)],
         [Paragraph("<b>Address Confirmed:</b>", cell_style), Paragraph(address_confirmed, cell_style), Paragraph("<b>Person Met:</b>", cell_style), Paragraph(person_met, cell_style)],
         [Paragraph("<b>Relationship:</b>", cell_style), Paragraph(relationship, cell_style), Paragraph("<b>Marital Status:</b>", cell_style), Paragraph(marital_status, cell_style)],
@@ -119,6 +118,7 @@ if submitted:
         [Paragraph("<b>Assets Seen:</b>", cell_style), Paragraph(assets_seen, cell_style), Paragraph("<b>Vehicle:</b>", cell_style), Paragraph(vehicle, cell_style)],
         [Paragraph("<b>Political Portrait:</b>", cell_style), Paragraph(portrait, cell_style), Paragraph("<b>Purpose:</b>", cell_style), Paragraph(purpose, cell_style)],
         [Paragraph("<b>Loans Taken:</b>", cell_style), Paragraph(loans_taken, cell_style), Paragraph("<b>Financier / EMI:</b>", cell_style), Paragraph(f"{financier} / {emi}", cell_style)],
+        [Paragraph("<b>Neighbor Name:</b>", cell_style), Paragraph(neighbor_name, cell_style), Paragraph("<b>Neighbor Mobile:</b>", cell_style), Paragraph(neighbor_mobile, cell_style)],
         [Paragraph("<b>Neighbor Feedback:</b>", cell_style), Paragraph(neighbors_feedback, cell_style), Paragraph("<b>Remarks:</b>", cell_style), Paragraph(f"<b><font color='green'>{remarks}</font></b>", cell_style)],
         [Paragraph("<b>Recommendation:</b>", cell_style), Paragraph(recommendation, cell_style), Paragraph("<b>Status:</b>", cell_style), Paragraph("Positive", cell_style)]
     ]
@@ -151,7 +151,6 @@ if submitted:
             with open(temp_path, "wb") as f:
                 f.write(up_file.getbuffer())
             temp_files.append(temp_path)
-            # ফটোৰ আকাৰটো ১ পেজত ফিট হোৱাকৈ সৰু কৰা হৈছে
             img_data.append(RLImage(temp_path, width=220, height=130))
             
     if len(img_data) > 0:
@@ -166,7 +165,6 @@ if submitted:
 
     story.append(Spacer(1, 6))
     
-    # Seal আৰু Verifier Name
     if uploaded_seal is not None:
         seal_path = "temp_seal.png"
         with open(seal_path, "wb") as f:
@@ -195,12 +193,14 @@ if submitted:
     doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India\nE-mail id: tigindialtd@gmail.com | Mobile: 8282864451")
     doc_word.add_heading("RESIDENCE VERIFICATION REPORT", level=2)
     doc_word.add_paragraph(f"Branch Name: {branch_name} | Lifting Date: {lifting_date}")
-    doc_word.add_paragraph(f"Name of Applicant: {applicant_name}")
+    doc_word.add_paragraph(f"Name of Applicant: {applicant_name} | Customer Mobile: {customer_mobile}")
+    doc_word.add_paragraph(f"Occupation: {occupation}")
     doc_word.add_paragraph(f"Residence Address: {address}")
     doc_word.add_paragraph(f"Date of Visit: {date_of_visit} | Time: {time_of_visit}")
     doc_word.add_paragraph(f"Person Met: {person_met} ({relationship})")
     doc_word.add_paragraph(f"Family Members: {family_members} | Earning: {earning_members}")
     doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
+    doc_word.add_paragraph(f"Neighbor Name: {neighbor_name} | Neighbor Mobile: {neighbor_mobile}")
     doc_word.add_paragraph(f"Verifier Remarks: {verifier_remarks}")
     doc_word.add_paragraph(f"\nVerifier Name: - {verifier_name}\nAuthorized Signature with Seal")
     

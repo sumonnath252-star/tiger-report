@@ -29,14 +29,13 @@ col_s1, col_s2 = st.columns(2)
 with col_s1:
     solar_install = st.selectbox("Solar Installed?", ["Yes", "No"], key="solar_select")
 with col_s2:
-    # Person met ৰ নামটো আগতীয়াকৈ লব যাতে remarks ত অট'মেটিক বহুৱাব পাৰে
     person_met = st.text_input("Person Met", "OSMAN ALI", key="person_met_quick")
 
-# অট'মেটিক Remarks লজিক (Yes বা No দিয়াৰ লগে লগে সলনি হ'ব)
-if solar_install == "Yes":
-    auto_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
-else:
+# একেবাৰে নিশ্চিত কৰা লজিক (Yes নে No চাই Remarks পঠিয়াব)
+if solar_install == "No":
     auto_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+else:
+    auto_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
 # ------------------------------------------------------------------
 
 with st.form("verification_form"):
@@ -68,7 +67,7 @@ with st.form("verification_form"):
         unit = st.text_input("Unit", "GROUND FLOOR")
         construction = st.text_input("Construction", "CEMENTED")
         roof_type = st.text_input("Type of Roof", "CONCRETE")
-        approx_area = st.text_input("Approx Area of the House (Sq Ft.)", "1000 SQFT")
+        approx_area = st.text_area("Approx Area of the House (Sq Ft.)", "1000 SQFT")
         floor = st.text_input("Floor of the House", "GROUND")
         assets_seen = st.text_input("Assets Seen? (Y/N)", "YES")
         vehicle = st.text_input("Vehicle", "NA")
@@ -88,8 +87,8 @@ with st.form("verification_form"):
         neighbor_mobile = st.text_input("Neighbor Mobile Number", "9123456789")
         neighbors_feedback = st.text_input("Neighbor's Feedback", "GOOD")
         
-        # ইয়াত অট'মেটিক আহি থকা remarks টো দেখুৱাব
-        verifier_remarks = st.text_input("Verifier Remarks", auto_verifier_remarks)
+        # Remarks টো দেখুৱাবলৈ
+        verifier_remarks = st.text_input("Verifier Remarks", value=auto_verifier_remarks)
         
         remarks = st.text_input("Remarks", "Positive")
         prev_applied = st.text_input("Did Customer Apply Previously?", "NA")
@@ -107,6 +106,12 @@ with st.form("verification_form"):
     submitted = st.form_submit_button("Generate Files")
 
 if submitted:
+    # সাবমিট কৰাৰ সময়তো চেপ কৰা হৈছে যে Yes নে No
+    if solar_install == "No":
+        final_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+    else:
+        final_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
+
     pdf_buffer = BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=15, bottomMargin=15)
     story = []
@@ -154,7 +159,7 @@ if submitted:
     story.append(t)
     story.append(Spacer(1, 4))
     
-    story.append(Paragraph(f"<b>Verifier Remarks:</b> {verifier_remarks}", cell_style))
+    story.append(Paragraph(f"<b>Verifier Remarks:</b> {final_verifier_remarks}", cell_style))
     story.append(Spacer(1, 4))
     
     story.append(Paragraph("<b>Verification Photos:</b>", ParagraphStyle('H3', parent=styles['Heading3'], fontSize=9, textColor=colors.HexColor('#006633'))))
@@ -220,7 +225,7 @@ if submitted:
     doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
     doc_word.add_paragraph(f"Neighbor Name: {neighbor_name} | Neighbor Mobile: {neighbor_mobile}")
     doc_word.add_paragraph(f"Solar Installed: {solar_install}")
-    doc_word.add_paragraph(f"Verifier Remarks: {verifier_remarks}")
+    doc_word.add_paragraph(f"Verifier Remarks: {final_verifier_remarks}")
     doc_word.add_paragraph(f"\nVerifier Name: - {verifier_name}\nAuthorized Signature with Seal")
     
     word_buffer = BytesIO()

@@ -35,9 +35,18 @@ def load_history():
     if os.path.exists(HISTORY_FILE):
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
+                content = f.read()
+                if content.strip():
+                    return json.loads(content)
+        except Exception as e:
             return []
+    else:
+        # যদি ফাইলটো নাই, তেন্তে খালী ফাইল এটা নিজাকৈ বনাই ল'ব
+        try:
+            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump([], f)
+        except:
+            pass
     return []
 
 def save_history(history_list):
@@ -50,8 +59,11 @@ def save_history(history_list):
             "Customer Mobile": item["Customer Mobile"],
             "FullData": item["FullData"]
         })
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(serializable_list, f, ensure_ascii=False, indent=4)
+    try:
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(serializable_list, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        pass
 
 # Session State ত স্থায়ী ফাইলৰ পৰা ডাটা লোড কৰা
 if 'report_history' not in st.session_state:
@@ -121,7 +133,7 @@ else:
         st.rerun()
 # ---------------------------------------------------------------------
 
-# মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Counter) - এতিয়া ৰিফ্ৰেচ কৰিলে শূন্য নহ'ব
+# মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Counter) - এতিয়া সদায় ঠিক হৈ থাকিব
 total_reports = len(st.session_state.report_history)
 st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
 
@@ -353,7 +365,7 @@ if submitted:
         "FullData": current_data
     }
     
-    # নতুন ৰিপ'ৰ্ট যোগ কৰা আৰু JSON ফাইলত স্থায়ীভাৱে Save কৰা
+    # Session ত যোগ কৰি JSON ফাইলত Save কৰা হ'ল
     st.session_state.report_history.append(new_record)
     save_history(st.session_state.report_history)
 

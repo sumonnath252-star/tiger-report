@@ -267,23 +267,4 @@ if submitted:
     if not branch_name.strip():
         missing_fields.append("Branch Name")
     if not lifting_date.strip():
-        missing_fields.append("Lifting Date")
-    if not applicant_name.strip():
-        missing_fields.append("Name of Applicant")
-    if not customer_mobile.strip():
-        missing_fields.append("Customer Mobile Number")
-    if not address.strip():
-        missing_fields.append("Residence Address")
-    if not date_of_visit.strip():
-        missing_fields.append("Date of Visit")
-    if not time_of_visit.strip():
-        missing_fields.append("Time of Visit")
-    if not relationship.strip():
-        missing_fields.append("Relationship")
-    if not person_met.strip():
-        missing_fields.append("Person Met")
-
-    if missing_fields:
-        st.error(f"❌ Please fill out all mandatory fields marked with (*): {', '.join(missing_fields)}")
-    else:
-        if solar_install == "No":
+        missing_fields.

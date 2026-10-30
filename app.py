@@ -76,13 +76,11 @@ with st.form("verification_form"):
         # Solar Install অপচন
         solar_install = st.selectbox("Solar Installed?", ["Yes", "No"])
         
-        # অট'মেটিক Remarks লজিক (Yes বা No অনুসৰি)
-        if solar_install == "Yes":
-            default_remark = "I Visited At The Provided Address and found solar panel is successfully installed"
-        else:
-            default_remark = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
-
-        verifier_remarks = st.text_input("Verifier Remarks", default_remark)
+        # যিহেতু ফৰ্মৰ ভিতৰত text_input দিলে ডাইনেমিকে সলনি নহয়, সেইয়ে আমি তলৰ লজিকটো চিধাচিধি ফিক্স কৰি দিছোঁ:
+        # User-এ input দিব পৰাকৈ ৰাখিছোঁ, কিন্তু default হিচাপে সঠিক remarks টো আহিব
+        remarks_default = "I Visited At The Provided Address and found solar panel is successfully installed" if solar_install == "Yes" else f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+        
+        verifier_remarks = st.text_input("Verifier Remarks", remarks_default)
         
         remarks = st.text_input("Remarks", "Positive")
         prev_applied = st.text_input("Did Customer Apply Previously?", "NA")
@@ -100,6 +98,12 @@ with st.form("verification_form"):
     submitted = st.form_submit_button("Generate Files")
 
 if submitted:
+    # ⚠️ গুৰুত্বপূৰ্ণ: Form Submit কৰাৰ পিছত Solar Install Yes নে No তাৰ ওপৰত ভিত্তি কৰি নিশ্চিতভাৱে সঠিক Remarks টো লব:
+    if solar_install == "Yes":
+        final_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
+    else:
+        final_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+
     pdf_buffer = BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=15, bottomMargin=15)
     story = []
@@ -147,7 +151,8 @@ if submitted:
     story.append(t)
     story.append(Spacer(1, 4))
     
-    story.append(Paragraph(f"<b>Verifier Remarks:</b> {verifier_remarks}", cell_style))
+    # ইয়াত ঠিক কৰা remarks টো ব্যৱহাৰ কৰা হৈছে
+    story.append(Paragraph(f"<b>Verifier Remarks:</b> {final_verifier_remarks}", cell_style))
     story.append(Spacer(1, 4))
     
     story.append(Paragraph("<b>Verification Photos:</b>", ParagraphStyle('H3', parent=styles['Heading3'], fontSize=9, textColor=colors.HexColor('#006633'))))
@@ -213,7 +218,7 @@ if submitted:
     doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
     doc_word.add_paragraph(f"Neighbor Name: {neighbor_name} | Neighbor Mobile: {neighbor_mobile}")
     doc_word.add_paragraph(f"Solar Installed: {solar_install}")
-    doc_word.add_paragraph(f"Verifier Remarks: {verifier_remarks}")
+    doc_word.add_paragraph(f"Verifier Remarks: {final_verifier_remarks}")
     doc_word.add_paragraph(f"\nVerifier Name: - {verifier_name}\nAuthorized Signature with Seal")
     
     word_buffer = BytesIO()

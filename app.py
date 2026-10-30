@@ -43,8 +43,6 @@ if 'is_authenticated' not in st.session_state:
 # WhatsApp OTP পঠোৱাৰ ফাংচন (CallMeBot API)
 def send_whatsapp_otp(phone, otp_code):
     phone_number = "91" + phone 
-    
-    # যদি আপুনি এতিয়াও Key পোৱা নাই, তেন্তে ইয়াত "YOUR_CALLMEBOT_APIKEY" বুলি থাকিলে ফেইল দেখুৱাব আৰু চিধাচিধিয়াকৈ স্ক্ৰীণত OTP দেখুৱাই দিব
     apikey = "YOUR_CALLMEBOT_APIKEY" 
     
     if apikey == "YOUR_CALLMEBOT_APIKEY":
@@ -78,11 +76,10 @@ if not st.session_state.is_authenticated:
         if success:
             st.sidebar.success("✅ OTP sent to your WhatsApp (8638031496)!")
         else:
-            # API Key নথকা অৱস্থাত আপোনাক সুবিধা দিবলৈ স্ক্ৰীণতে OTP টো দেখুৱাই দিব
             st.sidebar.warning(f"⚠️ CallMeBot API Key not set yet!\n\n👉 Your Testing OTP is: **{otp}**")
 
     if st.session_state.otp_sent:
-        entered_otp = st.sidebar.text_input("Enter 4-digit OTP", type="password")
+        entered_otp = st.sidebar.text_input("Enter 4-digit OTP", type="password", key="otp_input")
         if st.sidebar.button("Verify OTP"):
             if entered_otp == st.session_state.generated_otp:
                 st.session_state.is_authenticated = True
@@ -98,6 +95,7 @@ else:
         st.rerun()
 # ---------------------------------------------------------------------
 
+# মুঠ ৰিপ'ৰ্ট কাউণ্টাৰ সদায় ওপৰত দেখুৱাব
 total_reports = len(st.session_state.report_history)
 st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
 

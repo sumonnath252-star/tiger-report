@@ -31,7 +31,6 @@ with col_s1:
 with col_s2:
     person_met = st.text_input("Person Met", "OSMAN ALI", key="person_met_quick")
 
-# একেবাৰে নিশ্চিত কৰা লজিক (Yes নে No চাই Remarks পঠিয়াব)
 if solar_install == "No":
     auto_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
 else:
@@ -87,7 +86,6 @@ with st.form("verification_form"):
         neighbor_mobile = st.text_input("Neighbor Mobile Number", "9123456789")
         neighbors_feedback = st.text_input("Neighbor's Feedback", "GOOD")
         
-        # Remarks টো দেখুৱাবলৈ
         verifier_remarks = st.text_input("Verifier Remarks", value=auto_verifier_remarks)
         
         remarks = st.text_input("Remarks", "Positive")
@@ -106,7 +104,6 @@ with st.form("verification_form"):
     submitted = st.form_submit_button("Generate Files")
 
 if submitted:
-    # সাবমিট কৰাৰ সময়তো চেপ কৰা হৈছে যে Yes নে No
     if solar_install == "No":
         final_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
     else:
@@ -236,6 +233,11 @@ if submitted:
         if os.path.exists(tf):
             os.remove(tf)
             
+    # ফাইলৰ নামত Applicant Name আৰু Bank/Branch Name যোগ কৰা হৈছে (Space বোৰ _ লৈ সলনি কৰা হৈছে)
+    safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
+    safe_branch_name = "".join(c if c.isalnum() else "_" for c in branch_name)
+    file_prefix = f"{safe_applicant_name}_{safe_branch_name}"
+
     st.success("✨ Files successfully generated!")
     
     col_d1, col_d2 = st.columns(2)
@@ -243,13 +245,13 @@ if submitted:
         st.download_button(
             label="📥 Download PDF",
             data=pdf_buffer,
-            file_name="Residence_Verification_Report.pdf",
+            file_name=f"{file_prefix}_Report.pdf",
             mime="application/pdf"
         )
     with col_d2:
         st.download_button(
             label="📥 Download Word",
             data=word_buffer,
-            file_name="Residence_Verification_Report.docx",
+            file_name=f"{file_prefix}_Report.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )

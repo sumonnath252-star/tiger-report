@@ -94,7 +94,7 @@ with st.form("verification_form"):
         occupation = st.text_input("Occupation", "BUSINESS")
         address = st.text_area("Residence Address *", "VILL:LALUNG GAON, P/O-KASORI P/S-JURIA PINCODE-782124 DIST: NAGAON, ASSAM")
         date_of_visit = st.text_input("Date of Visit *", "03.10.2026")
-        time_of_visit = st.text_input("Time of Visit", "09:33:00 AM")
+        time_of_visit = st.text_input("Time of Visit *", "09:33:00 AM")
         address_confirmed = st.text_input("Address Confirmed", "YES")
         relationship = st.text_input("Relationship *", "FATHER")
         marital_status = st.text_input("Marital Status", "MARRIED")
@@ -263,138 +263,9 @@ def generate_report_files(data_dict, p1, p2, seal):
     return pdf_buffer, word_buffer
 
 if submitted:
-    # Mandatory Validation Check
+    # Mandatory Validation Check including Time of Visit
     missing_fields = []
     if not branch_name.strip(): missing_fields.append("Branch Name")
     if not lifting_date.strip(): missing_fields.append("Lifting Date")
     if not applicant_name.strip(): missing_fields.append("Name of Applicant")
-    if not customer_mobile.strip(): missing_fields.append("Customer Mobile Number")
-    if not address.strip(): missing_fields.append("Residence Address")
-    if not date_of_visit.strip(): missing_fields.append("Date of Visit")
-    if not relationship.strip(): missing_fields.append("Relationship")
-    if not person_met.strip(): missing_fields.append("Person Met")
-
-    if missing_fields:
-        st.error(f"❌ Please fill out all mandatory fields marked with (*): {', '.join(missing_fields)}")
-    else:
-        if solar_install == "No":
-            final_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
-        else:
-            final_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
-
-        current_data = {
-            "branch_name": branch_name, "lifting_date": lifting_date, "applicant_name": applicant_name,
-            "customer_mobile": customer_mobile, "occupation": occupation, "address": address,
-            "date_of_visit": date_of_visit, "time_of_visit": time_of_visit, "address_confirmed": address_confirmed,
-            "person_met": person_met, "relationship": relationship, "marital_status": marital_status,
-            "family_members": family_members, "earning_members": earning_members, "children": children,
-            "is_spouse_working": is_spouse_working, "spouse_details": spouse_details, "ownership": ownership,
-            "years_in_house": years_in_house, "construction": construction, "roof_type": roof_type,
-            "approx_area": approx_area, "floor": floor, "assets_seen": assets_seen, "vehicle": vehicle,
-            "portrait": portrait, "purpose": purpose, "financier": financier, "emi": emi,
-            "loans_taken": loans_taken, "neighbor_name": neighbor_name, "neighbor_mobile": neighbor_mobile,
-            "neighbors_feedback": neighbors_feedback, "solar_install": solar_install, "remarks": remarks,
-            "verifier_name": verifier_name, "final_verifier_remarks": final_verifier_remarks
-        }
-
-        pdf_buffer, word_buffer = generate_report_files(current_data, uploaded_photo1, uploaded_photo2, uploaded_seal)
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        new_record = {
-            "Timestamp": current_time,
-            "Applicant Name": applicant_name,
-            "Branch Name": branch_name,
-            "Customer Mobile": customer_mobile,
-            "FullData": current_data
-        }
-        
-        st.session_state.report_history.append(new_record)
-        save_history(st.session_state.report_history)
-
-        safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
-        safe_branch_name = "".join(c if c.isalnum() else "_" for c in branch_name)
-        file_prefix = f"{safe_applicant_name}_{safe_branch_name}"
-
-        st.success("✨ Files successfully generated and logged in history!")
-        
-        col_d1, col_d2 = st.columns(2)
-        with col_d1:
-            st.download_button("📥 Download PDF", data=pdf_buffer, file_name=f"{file_prefix}_Report.pdf", mime="application/pdf")
-        with col_d2:
-            st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-
-# ----------------- SECURE OWNER PIN LOGIN (1234) & BACKUP/RESTORE -----------------
-st.markdown("---")
-st.subheader("🔐 Owner Dashboard Secure PIN Login")
-st.write("Desboard khuliboloe apunar secret pin (zene: **1234**) diok:")
-
-if not st.session_state.is_authenticated:
-    entered_pin = st.text_input("Enter 4-digit PIN", type="password", key="owner_pin_input")
-    if st.button("Login"):
-        if entered_pin == "1234":
-            st.session_state.is_authenticated = True
-            st.success("🎉 Login Successful!")
-            st.rerun()
-        else:
-            st.error("❌ Invalid PIN. Please try again.")
-else:
-    st.success("🔓 Logged in as Owner")
-    if st.button("Logout"):
-        st.session_state.is_authenticated = False
-        st.rerun()
-
-    st.markdown("---")
-    st.subheader("📁 Owner Dashboard: Backup & Restore History")
-    
-    history_json_str = json.dumps(st.session_state.report_history, ensure_ascii=False, indent=4)
-    st.download_button(
-        label="📥 Download All History Backup (JSON)",
-        data=history_json_str,
-        file_name=f"report_history_backup_{datetime.now().strftime('%Y%m%d')}.json",
-        mime="application/json"
-    )
-
-    uploaded_history_file = st.file_uploader("📤 Restore History from Backup JSON", type=["json"], key="restore_json")
-    if uploaded_history_file is not None:
-        try:
-            restored_data = json.load(uploaded_history_file)
-            if isinstance(restored_data, list):
-                st.session_state.report_history = restored_data
-                save_history(restored_data)
-                st.success("🎉 History successfully restored! Refresh page to see reports.")
-        except Exception as e:
-            st.error(f"❌ Error restoring history: {e}")
-
-    st.markdown("---")
-    st.subheader(f"📁 Saved Reports List (Total: {len(st.session_state.report_history)})")
-    
-    if len(st.session_state.report_history) > 0:
-        for idx, item in enumerate(st.session_state.report_history):
-            with st.expander(f"📁 {idx+1}. {item['Applicant Name']} (Branch: {item['Branch Name']} - {item['Timestamp']})"):
-                st.write(f"**Customer Mobile:** {item['Customer Mobile']}")
-                
-                old_pdf, old_word = generate_report_files(item['FullData'], None, None, None)
-                
-                s_app = "".join(c if c.isalnum() else "_" for c in item['Applicant Name'])
-                s_brn = "".join(c if c.isalnum() else "_" for c in item['Branch Name'])
-                
-                col_h1, col_h2 = st.columns(2)
-                with col_h1:
-                    st.download_button(
-                        label=f"📥 Re-Download PDF ({item['Applicant Name']})",
-                        data=old_pdf,
-                        file_name=f"{s_app}_{s_brn}_Report.pdf",
-                        mime="application/pdf",
-                        key=f"pdf_{idx}"
-                    )
-                with col_h2:
-                    st.download_button(
-                        label=f"📥 Re-Download Word ({item['Applicant Name']})",
-                        data=old_word,
-                        file_name=f"{s_app}_{s_brn}_Report.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        key=f"word_{idx}"
-                    )
-    else:
-        st.info("Etiyolike kunu report bonua huwa nai.")
+    if not customer_mobile.strip():

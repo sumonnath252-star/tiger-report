@@ -24,7 +24,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from docx import Document
 
-st.set_page_config(page_title="Residence Verification Report Generator", layout="centered")
+# initial_sidebar_state="expanded" ৰ দ্বাৰা Sidebar টো সদায় মুকলি হৈ থাকিব
+st.set_page_config(page_title="Residence Verification Report Generator", layout="centered", initial_sidebar_state="expanded")
 
 st.title("🏡 Residence Verification Report Generator")
 
@@ -41,7 +42,6 @@ def load_history():
         except Exception as e:
             return []
     else:
-        # যদি ফাইলটো নাই, তেন্তে খালী ফাইল এটা নিজাকৈ বনাই ল'ব
         try:
             with open(HISTORY_FILE, "w", encoding="utf-8") as f:
                 json.dump([], f)
@@ -65,7 +65,6 @@ def save_history(history_list):
     except Exception as e:
         pass
 
-# Session State ত স্থায়ী ফাইলৰ পৰা ডাটা লোড কৰা
 if 'report_history' not in st.session_state:
     st.session_state.report_history = load_history()
 
@@ -78,13 +77,12 @@ if 'generated_otp' not in st.session_state:
 if 'is_authenticated' not in st.session_state:
     st.session_state.is_authenticated = False
 
-# WhatsApp OTP পঠোৱাৰ ফাংচন (CallMeBot API)
 def send_whatsapp_otp(phone, otp_code):
     phone_number = "91" + phone 
     apikey = "YOUR_CALLMEBOT_APIKEY" 
     
     if apikey == "YOUR_CALLMEBOT_APIKEY":
-        return False # Key নথকাৰ বাবে স্ক্ৰীণত টেষ্ট OTP দেখুৱাব
+        return False
     
     message = urllib.parse.quote(f"🔒 Tiger 4 India - Owner Dashboard OTP is: {otp_code}")
     url = f"https://api.callmebot.com/whatsapp.php?phone={phone_number}&text={message}&apikey={apikey}"
@@ -133,11 +131,9 @@ else:
         st.rerun()
 # ---------------------------------------------------------------------
 
-# মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Counter) - এতিয়া সদায় ঠিক হৈ থাকিব
 total_reports = len(st.session_state.report_history)
 st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
 
-# ----------------- ফৰ্মৰ বাহিৰত ডাইনেমিক ইনপুটসমূহ -----------------
 st.subheader("⚙️ Quick Status Selection")
 col_s1, col_s2 = st.columns(2)
 with col_s1:
@@ -149,7 +145,6 @@ if solar_install == "No":
     auto_verifier_remarks = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
 else:
     auto_verifier_remarks = "I Visited At The Provided Address and found solar panel is successfully installed"
-# ------------------------------------------------------------------
 
 with st.form("verification_form"):
     st.subheader("📋 Applicant & Visit Details")
@@ -217,7 +212,6 @@ with st.form("verification_form"):
 
     submitted = st.form_submit_button("Generate Files")
 
-# PDF আৰু Word বনোৱাৰ ফাংচন
 def generate_report_files(data_dict, p1, p2, seal):
     pdf_buffer = BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, pagesize=letter, rightMargin=20, leftMargin=20, topMargin=15, bottomMargin=15)
@@ -365,7 +359,6 @@ if submitted:
         "FullData": current_data
     }
     
-    # Session ত যোগ কৰি JSON ফাইলত Save কৰা হ'ল
     st.session_state.report_history.append(new_record)
     save_history(st.session_state.report_history)
 
@@ -381,7 +374,6 @@ if submitted:
     with col_d2:
         st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-# ----------------- অনাৰ (Owner) ভাৰिफাইড হ'লেহে হিষ্ট্ৰী দেখা যাব -----------------
 if st.session_state.is_authenticated:
     st.markdown("---")
     st.subheader("🔐 Owner Dashboard (WhatsApp: 8638031496): Saved Reports & Past Downloads")

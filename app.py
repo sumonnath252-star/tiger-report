@@ -3,7 +3,6 @@ from io import BytesIO
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import random
 import json
 
 # CSS code to hide Streamlit branding
@@ -26,7 +25,7 @@ st.set_page_config(page_title="Residence Verification Report Generator", layout=
 
 st.title("🏡 Residence Verification Report Generator")
 
-# ----------------- LOCAL JSON STORAGE FOR PERMANENT HISTORY -----------------
+# ----------------- PERMANENT JSON STORAGE FOR HISTORY -----------------
 HISTORY_FILE = "report_history.json"
 
 def load_history():
@@ -69,7 +68,7 @@ if 'is_authenticated' not in st.session_state:
     st.session_state.is_authenticated = False
 
 total_reports = len(st.session_state.report_history)
-st.info(f"📊 মুঠ বনোৱা ৰিপ'ৰ্টৰ সংখ্যা (Total Reports Generated): **{total_reports}**")
+st.info(f"📊 Muth bonuwa report-or songkha (Total Reports Generated): **{total_reports}**")
 
 st.subheader("⚙️ Quick Status Selection")
 col_s1, col_s2 = st.columns(2)
@@ -140,7 +139,7 @@ with st.form("verification_form"):
         recommendation = st.text_input("Recommendation", "Yes")
         verifier_name = st.text_input("Verifier Name", "EKRAMUL HUSSAIN")
 
-    st.subheader("📸 Upload Verification Photos (দুখন ফটো আপলোড কৰক)")
+    st.subheader("📸 Upload Verification Photos (Dukhan photo upload korok)")
     uploaded_photo1 = st.file_uploader("Upload House/Location Photo 1", type=["jpg", "jpeg", "png"], key="p1")
     uploaded_photo2 = st.file_uploader("Upload Customer/Verifier Photo 2", type=["jpg", "jpeg", "png"], key="p2")
 
@@ -311,10 +310,10 @@ if submitted:
     with col_d2:
         st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-# ----------------- SECURE OWNER PIN LOGIN (1234) -----------------
+# ----------------- SECURE OWNER PIN LOGIN (1234) & BACKUP/RESTORE -----------------
 st.markdown("---")
 st.subheader("🔐 Owner Dashboard Secure PIN Login")
-st.write("ডেশ্বৰ্ড খুলিবলৈ আপোনাৰ গোপন পিন নম্বৰটো (যেনে: **1234**) দিয়ক:")
+st.write("Desboard khuliboloe apunar secret pin (zene: **1234**) diok:")
 
 if not st.session_state.is_authenticated:
     entered_pin = st.text_input("Enter 4-digit PIN", type="password", key="owner_pin_input")
@@ -326,13 +325,37 @@ if not st.session_state.is_authenticated:
         else:
             st.error("❌ Invalid PIN. Please try again.")
 else:
-    st.success("🔓 Logged in as Owner (sumonnath252@gmail.com)")
+    st.success("🔓 Logged in as Owner")
     if st.button("Logout"):
         st.session_state.is_authenticated = False
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📁 Owner Dashboard: Saved Reports & Past Downloads")
+    st.subheader("📁 Owner Dashboard: Backup & Restore History")
+    
+    # Backup (Download history json)
+    history_json_str = json.dumps(st.session_state.report_history, ensure_ascii=False, indent=4)
+    st.download_button(
+        label="📥 Download All History Backup (JSON)",
+        data=history_json_str,
+        file_name=f"report_history_backup_{datetime.now().strftime('%Y%m%d')}.json",
+        mime="application/json"
+    )
+
+    # Restore (Upload history json)
+    uploaded_history_file = st.file_uploader("📤 Restore History from Backup JSON", type=["json"], key="restore_json")
+    if uploaded_history_file is not None:
+        try:
+            restored_data = json.load(uploaded_history_file)
+            if isinstance(restored_data, list):
+                st.session_state.report_history = restored_data
+                save_history(restored_data)
+                st.success("🎉 History successfully restored! Refresh page to see reports.")
+        except Exception as e:
+            st.error(f"❌ Error restoring history: {e}")
+
+    st.markdown("---")
+    st.subheader(f"📁 Saved Reports List (Total: {len(st.session_state.report_history)})")
     
     if len(st.session_state.report_history) > 0:
         for idx, item in enumerate(st.session_state.report_history):
@@ -362,4 +385,4 @@ else:
                         key=f"word_{idx}"
                     )
     else:
-        st.info("এতিয়ালৈকে কোনো ৰিপ'ৰ্ট বনোৱা হোৱা নাই।")
+        st.info("Etiyolike kunu report bonua huwa nai.")

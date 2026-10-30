@@ -31,8 +31,8 @@ with st.form("verification_form"):
         branch_name = st.text_input("Branch Name", "SBI SAMAGURI BRANCH")
         lifting_date = st.text_input("Lifting Date", "03.10.2026")
         applicant_name = st.text_input("Name of Applicant", "USUF ALI")
-        customer_mobile = st.text_input("Customer Mobile Number", "9876543210") # নতুন ফিল্ড
-        occupation = st.text_input("Occupation", "BUSINESS") # নতুন ফিল্ড
+        customer_mobile = st.text_input("Customer Mobile Number", "9876543210")
+        occupation = st.text_input("Occupation", "BUSINESS")
         address = st.text_area("Residence Address", "VILL:LALUNG GAON, P/O-KASORI P/S-JURIA PINCODE-782124 DIST: NAGAON, ASSAM")
         date_of_visit = st.text_input("Date of Visit", "03.10.2026")
         time_of_visit = st.text_input("Time of Visit", "09:33:00 AM")
@@ -69,10 +69,21 @@ with st.form("verification_form"):
         emi = st.text_input("EMI", "NA")
         accessibility = st.text_input("Accessibility of Office", "Easy")
     with col4:
-        neighbor_name = st.text_input("Neighbor Name", "RAHIM UDDIN") # নতুন ফিল্ড
-        neighbor_mobile = st.text_input("Neighbor Mobile Number", "9123456789") # নতুন ফিল্ড
+        neighbor_name = st.text_input("Neighbor Name", "RAHIM UDDIN")
+        neighbor_mobile = st.text_input("Neighbor Mobile Number", "9123456789")
         neighbors_feedback = st.text_input("Neighbor's Feedback", "GOOD")
-        verifier_remarks = st.text_input("Verifier Remarks", "I Visited At The Provided Address and found solar panel is successfully installed")
+        
+        # Solar Install অপচন
+        solar_install = st.selectbox("Solar Installed?", ["Yes", "No"])
+        
+        # অট'মেটিক Remarks তৈয়াৰ কৰা লজিক (No দিলে Person Met ৰ নামটো ভৰাই দিব)
+        if solar_install == "Yes":
+            default_remark = "I Visited At The Provided Address and found solar panel is successfully installed"
+        else:
+            default_remark = f"I Visited At The Provided Address & I Met with {person_met} Confirmed His Address. Neighbor’s feedback Is Satisfactory. There is no Adverse report found as per enquiry. Hence The Residence Report is Positive."
+
+        verifier_remarks = st.text_input("Verifier Remarks", default_remark)
+        
         remarks = st.text_input("Remarks", "Positive")
         prev_applied = st.text_input("Did Customer Apply Previously?", "NA")
         prev_date = st.text_input("Date of Previous File", "NA")
@@ -119,8 +130,8 @@ if submitted:
         [Paragraph("<b>Political Portrait:</b>", cell_style), Paragraph(portrait, cell_style), Paragraph("<b>Purpose:</b>", cell_style), Paragraph(purpose, cell_style)],
         [Paragraph("<b>Loans Taken:</b>", cell_style), Paragraph(loans_taken, cell_style), Paragraph("<b>Financier / EMI:</b>", cell_style), Paragraph(f"{financier} / {emi}", cell_style)],
         [Paragraph("<b>Neighbor Name:</b>", cell_style), Paragraph(neighbor_name, cell_style), Paragraph("<b>Neighbor Mobile:</b>", cell_style), Paragraph(neighbor_mobile, cell_style)],
-        [Paragraph("<b>Neighbor Feedback:</b>", cell_style), Paragraph(neighbors_feedback, cell_style), Paragraph("<b>Remarks:</b>", cell_style), Paragraph(f"<b><font color='green'>{remarks}</font></b>", cell_style)],
-        [Paragraph("<b>Recommendation:</b>", cell_style), Paragraph(recommendation, cell_style), Paragraph("<b>Status:</b>", cell_style), Paragraph("Positive", cell_style)]
+        [Paragraph("<b>Neighbor Feedback:</b>", cell_style), Paragraph(neighbors_feedback, cell_style), Paragraph("<b>Solar Installed:</b>", cell_style), Paragraph(solar_install, cell_style)],
+        [Paragraph("<b>Remarks:</b>", cell_style), Paragraph(f"<b><font color='green'>{remarks}</font></b>", cell_style), Paragraph("<b>Status:</b>", cell_style), Paragraph("Positive", cell_style)]
     ]
     
     t = Table(data, colWidths=[110, 160, 100, 202])
@@ -201,6 +212,7 @@ if submitted:
     doc_word.add_paragraph(f"Family Members: {family_members} | Earning: {earning_members}")
     doc_word.add_paragraph(f"Ownership: {ownership} | Construction: {construction} | Roof: {roof_type}")
     doc_word.add_paragraph(f"Neighbor Name: {neighbor_name} | Neighbor Mobile: {neighbor_mobile}")
+    doc_word.add_paragraph(f"Solar Installed: {solar_install}")
     doc_word.add_paragraph(f"Verifier Remarks: {verifier_remarks}")
     doc_word.add_paragraph(f"\nVerifier Name: - {verifier_name}\nAuthorized Signature with Seal")
     

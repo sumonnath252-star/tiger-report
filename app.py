@@ -6,6 +6,7 @@ from datetime import datetime
 import random
 import urllib.request
 import urllib.parse
+import json
 
 # CSS code to hide Streamlit branding
 hide_streamlit_style = """
@@ -27,9 +28,36 @@ st.set_page_config(page_title="Residence Verification Report Generator", layout=
 
 st.title("🏡 Residence Verification Report Generator")
 
-# ----------------- SESSION STATE & OTP INITIALIZATION -----------------
+# ----------------- LOCAL FILE STORAGE FOR PERMANENT HISTORY -----------------
+HISTORY_FILE = "report_history.json"
+
+def load_history():
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return []
+    return []
+
+def save_history(history_list):
+    # JSON ত file objects বা Bytes সংৰক্ষণ কৰিব নোৱাৰি, সেয়ে কেৱল text/data বোৰ সাঁচি ৰখা হয়
+    serializable_list = []
+    for item in history_list:
+        serializable_list.append({
+            "Timestamp": item["Timestamp"],
+            "Applicant Name": item["Applicant Name"],
+            "Branch Name": item["Branch Name"],
+            "Customer Mobile": item["Customer Mobile"],
+            "FullData": item["FullData"]
+        })
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(serializable_list, f, ensure_ascii=False, indent=4)
+
+# Session State ত স্থায়ী ফাইলৰ পৰা ডাটা লোড কৰা
 if 'report_history' not in st.session_state:
-    st.session_state.report_history = []
+    loaded_data = load_history()
+    st.session_state.report_history = loaded_data
 
 if 'otp_sent' not in st.session_state:
     st.session_state.otp_sent = False
@@ -318,16 +346,20 @@ if submitted:
     pdf_buffer, word_buffer = generate_report_files(current_data, uploaded_photo1, uploaded_photo2, uploaded_seal)
     
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.session_state.report_history.append({
+    
+    # নতুন ৰিপ'ৰ্টটো হিষ্ট্ৰীত যোগ কৰা হৈছে
+    new_record = {
         "Timestamp": current_time,
         "Applicant Name": applicant_name,
         "Branch Name": branch_name,
         "Customer Mobile": customer_mobile,
-        "FullData": current_data,
-        "Photo1": uploaded_photo1,
-        "Photo2": uploaded_photo2,
-        "Seal": uploaded_seal
-    })
+        "FullData": current_data
+    }
+    
+    st.session_state.report_history.append(new_record)
+    
+    # স্থায়ী ফাইলত (JSON) চিজ কৰি ৰখা হৈছে যাতে ৰিফ্ৰেচ কৰিলে নাইকিয়া নহয়
+    save_history(st.session_state.report_history)
 
     safe_applicant_name = "".join(c if c.isalnum() else "_" for c in applicant_name)
     safe_branch_name = "".join(c if c.isalnum() else "_" for c in branch_name)
@@ -341,7 +373,7 @@ if submitted:
     with col_d2:
         st.download_button("📥 Download Word", data=word_buffer, file_name=f"{file_prefix}_Report.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-# ----------------- কেৱল অনাৰ (Owner) ভাৰिफাইড হ'লেহে হিষ্ট্ৰী দেখা যাব -----------------
+# ----------------- অনাৰ (Owner) ভাৰिफাইড হ'লেহে হিষ্ট্ৰী দেখা যাব -----------------
 if st.session_state.is_authenticated:
     st.markdown("---")
     st.subheader("🔐 Owner Dashboard (WhatsApp: 8638031496): Saved Reports & Past Downloads")
@@ -351,7 +383,8 @@ if st.session_state.is_authenticated:
             with st.expander(f"📁 {idx+1}. {item['Applicant Name']} (Branch: {item['Branch Name']} - {item['Timestamp']})"):
                 st.write(f"**Customer Mobile:** {item['Customer Mobile']}")
                 
-                old_pdf, old_word = generate_report_files(item['FullData'], item['Photo1'], item['Photo2'], item['Seal'])
+                # পুৰণি ফটো আৰু ছীল নথকাৰ বাবে খালী দি নতুনকৈ জেনারেট কৰিবলৈ দিয়া হৈছে
+                old_pdf, old_word = generate_report_files(item['FullData'], None, None, None)
                 
                 s_app = "".join(c if c.isalnum() else "_" for c in item['Applicant Name'])
                 s_brn = "".join(c if c.isalnum() else "_" for c in item['Branch Name'])

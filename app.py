@@ -4,6 +4,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import json
+import base64
+import urllib.request
 
 # CSS code to hide Streamlit branding
 hide_streamlit_style = """
@@ -25,24 +27,35 @@ st.set_page_config(page_title="Residence Verification Report Generator", layout=
 
 st.title("🏡 Residence Verification Report Generator")
 
-# ----------------- PERMANENT JSON STORAGE FOR HISTORY -----------------
+# ----------------- GITHUB PERMANENT STORAGE CONFIGURATION -----------------
 HISTORY_FILE = "report_history.json"
+GITHUB_TOKEN = "ghp_Vyoe7GNs1kPmgfp5ghg9xAFNtUar72307zYn"
+REPO_NAME = "sumonnath252-star/tiger-report"
 
 def load_history():
+    url = f"https://api.github.com/repos/{REPO_NAME}/contents/{HISTORY_FILE}"
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode())
+            file_content = base64.b64decode(res_data["content"]).decode("utf-8")
+            return json.loads(file_content)
+    except Exception:
+        pass
+        
+    # Fallback to local file if GitHub API fails
     if os.path.exists(HISTORY_FILE):
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
                 content = f.read()
                 if content.strip():
                     return json.loads(content)
-        except Exception as e:
+        except Exception:
             return []
-    else:
-        try:
-            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-                json.dump([], f)
-        except:
-            pass
     return []
 
 def save_history(history_list):
@@ -55,9 +68,49 @@ def save_history(history_list):
             "Customer Mobile": item["Customer Mobile"],
             "FullData": item["FullData"]
         })
+    
+    json_data = json.dumps(serializable_list, ensure_ascii=False, indent=4)
+    
+    # Save locally as backup
     try:
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-            json.dump(serializable_list, f, ensure_ascii=False, indent=4)
+            f.write(json_data)
+    except Exception:
+        pass
+
+    # Save permanently to GitHub repository
+    url = f"https://api.github.com/repos/{REPO_NAME}/contents/{HISTORY_FILE}"
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+    }
+    
+    # Check current file SHA (required by GitHub API for updates)
+    sha = None
+    try:
+        req_get = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req_get) as resp:
+            sha = json.loads(resp.read().decode())["sha"]
+    except Exception:
+        pass
+        
+    encoded_content = base64.b64encode(json_data.encode("utf-8")).decode("utf-8")
+    payload = {
+        "message": f"Update report history - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "content": encoded_content
+    }
+    if sha:
+        payload["sha"] = sha
+        
+    try:
+        req_put = urllib.request.Request(
+            url, 
+            data=json.dumps(payload).encode("utf-8"), 
+            headers=headers, 
+            method="PUT"
+        )
+        urllib.request.urlopen(req_put)
     except Exception as e:
         pass
 
@@ -371,7 +424,7 @@ else:
             if isinstance(restored_data, list):
                 st.session_state.report_history = restored_data
                 save_history(restored_data)
-                st.success("🎉 History successfully restored! Refresh page to see reports.")
+                st.success("🎉 History successfully restored and synced to GitHub!")
         except Exception as e:
             st.error(f"❌ Error restoring history: {e}")
 

@@ -260,12 +260,13 @@ def generate_report_files(data_dict, p1, p2, seal):
             with open(temp_path, "wb") as f:
                 f.write(up_file.getbuffer())
             temp_files.append(temp_path)
-            img_data.append(RLImage(temp_path, width=220, height=130))
+            # Photo size increased to width=250, height=160
+            img_data.append(RLImage(temp_path, width=250, height=160))
             
     if len(img_data) > 0:
         while len(img_data) < 2:
             img_data.append("")
-        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[286, 286])
+        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[290, 290])
         photo_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER'), ('VALIGN', (0,0), (-1,-1), 'MIDDLE')]))
         story.append(photo_table)
 

@@ -237,4 +237,27 @@ def generate_report_files(data_dict, p1, p2, seal):
     
     t = Table(table_data, colWidths=[110, 160, 100, 202])
     t.setStyle(TableStyle([
-        ('BACKGROUND',
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F4F9F4')),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#006633')),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#C2D6C2')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    
+    story.append(t)
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(f"<b>Verifier Remarks:</b> {data_dict['final_verifier_remarks']}", cell_style))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>Verification Photos:</b>", ParagraphStyle('H3', parent=styles['Heading3'], fontSize=9, textColor=colors.HexColor('#006633'))))
+    story.append(Spacer(1, 2))
+    
+    img_data = []
+    temp_files = []
+    for idx, up_file in enumerate([p1, p2]):
+        if up_file is not None:
+            temp_path = f"temp_img_{idx}_{datetime.now().microsecond}.jpg"
+            with open(temp_path, "wb") as f:
+                f.write(up_file.getbuffer())
+            temp_files.append(temp_path)
+            img_data.append(RLImage(temp_path,

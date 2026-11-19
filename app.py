@@ -260,4 +260,36 @@ def generate_report_files(data_dict, p1, p2, seal):
             with open(temp_path, "wb") as f:
                 f.write(up_file.getbuffer())
             temp_files.append(temp_path)
-            img_data.append(RLImage(temp_path,
+            img_data.append(RLImage(temp_path, width=250, height=160))
+            
+    if len(img_data) > 0:
+        while len(img_data) < 2:
+            img_data.append("")
+        photo_table = Table([[img_data[0], img_data[1]]], colWidths=[290, 290])
+        photo_table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]))
+        story.append(photo_table)
+
+    story.append(Spacer(1, 6))
+    
+    if seal is not None:
+        seal_path = f"temp_seal_{datetime.now().microsecond}.png"
+        with open(seal_path, "wb") as f:
+            f.write(seal.getbuffer())
+        temp_files.append(seal_path)
+        seal_img = RLImage(seal_path, width=80, height=80)
+        name_para = Paragraph(f"<b>Verifier Name: - {data_dict['verifier_name']}</b><br/><br/><b>Authorized Signature with Seal</b>", cell_style)
+        sig_table = Table([[seal_img], [name_para]], colWidths=[250])
+        sig_table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'LEFT'), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('BOTTOMPADDING', (0, 0), (-1, 0), -38)]))
+    else:
+        name_para = Paragraph(f"<b>Verifier Name: - {data_dict['verifier_name']}</b><br/><br/><b>Authorized Signature with Seal</b>", cell_style)
+        sig_table = Table([[name_para]], colWidths=[250])
+
+    story.append(sig_table)
+    doc.build(story)
+    pdf_buffer.seek(0)
+    
+    doc_word = Document()
+    doc_word.add_heading("TIGER 4 INDIA LIMITED", level=1)
+    doc_word.add_paragraph("Corporate Office: #7, Lower Ground Floor, L.S.C., B-1, Vasant Kunj, New Delhi-110070 India\nE-mail id: tigerindialtd@gmail.com | Mobile: 8282864451")
+    doc_word.add_heading("RESIDENCE VERIFICATION REPORT", level=2)
+    doc_word.
